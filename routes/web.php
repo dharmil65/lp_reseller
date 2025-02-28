@@ -41,9 +41,3 @@ Route::middleware(['auth', 'role:reseller'])->group(function () {
 Route::middleware(['auth', 'role:advertiser'])->group(function () {
     Route::get('/advertiser/dashboard', [AdvertiserController::class, 'index']);
 });
-
-Route::middleware('auth')->group(function () {
-    Route::any('{any}', function () {
-        abort(403, 'Unauthorized');
-    })->where('any', '.*');
-});
