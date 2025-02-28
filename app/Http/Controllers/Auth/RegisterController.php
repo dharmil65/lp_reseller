@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use DB;
+use Illuminate\Support\Str;
 
 class RegisterController extends Controller
 {
@@ -61,6 +63,31 @@ class RegisterController extends Controller
      * @param  array  $data
      * @return \App\Models\User
      */
+    protected function createOld(array $data)
+    {
+        $checkInReseller = DB::connection('phpfmv_gpmarketplace')
+            ->table('resellers')
+            ->where('email', $data['email'])
+            ->first();
+
+        if ($checkInReseller) {
+            return redirect()->route('login');
+        }
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+        ]);
+
+        if ($user) {
+            Auth::login($user);
+            return redirect()->route('reseller-dashboard');
+        }
+
+        return redirect()->route('login')->with('error', 'Registration failed. Please try again.');
+    }
+
     protected function create(array $data)
     {
         return User::create([

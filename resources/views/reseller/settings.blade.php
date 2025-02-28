@@ -2,6 +2,7 @@
 
 @section('title', 'Settings')
 
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
     .settings-section.section-content {
         display: block;
@@ -102,24 +103,29 @@
                 $commissionInput.focus();
             });
 
+            var identityToken = "{{ Auth::user()->identity_token }}";
+
             $commissionForm.on('submit', function(event) {
                 event.preventDefault();
                 var newValue = $commissionInput.val();
 
                 $.ajax({
-                    url: "{{ route('update-commission-reseller') }}",
-                    method: 'POST',
+                    url: "/api/update-commission",
+                    method: "POST",
+                    headers: {
+                        'Authorization': 'Bearer ' + identityToken,
+                        'Accept': 'application/json'
+                    },
                     data: {
                         commission: newValue,
-                        user_name: '{{ Auth::user()->name }}',
-                        _token: '{{ csrf_token() }}'
+                        user_name: '{{ Auth::user()->name }}'
                     },
                     success: function(response) {
-                        if (response.success == true) {
+                        if (response.success) {
                             $('.successMsgClass').css('display', 'block');
                             $('.columnSuccess').html(response.message);
 
-                            window.setTimeout(function(){
+                            setTimeout(function() {
                                 $('.successMsgClass').fadeOut('slow');
                                 window.location.reload();
                             }, 2000);
@@ -127,9 +133,8 @@
                             $('.errorMsgClass').css('display', 'block');
                             $('.columnError').html(response.message);
 
-                            window.setTimeout(function(){
+                            setTimeout(function() {
                                 $('.errorMsgClass').fadeOut('slow');
-                                window.location.reload();
                             }, 2000);
                         }
                     }

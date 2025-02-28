@@ -9,7 +9,7 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
 class LoginController extends Controller
 {
-    use AuthenticatesUsers; // Ensure this trait is included
+    use AuthenticatesUsers;
 
     public function __construct()
     {

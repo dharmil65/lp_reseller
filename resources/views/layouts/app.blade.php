@@ -66,7 +66,7 @@
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <button class="toggle-btn" id="sidebarToggle"><i class="fas fa-bars"></i></button>
             <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
+                <a class="navbar-brand" href="{{ url('/reseller/dashboard') }}">
                     {{ config('app.name', 'Laravel') }}
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">

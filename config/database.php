@@ -63,6 +63,20 @@ return [
             ]) : [],
         ],
 
+        'phpfmv_gpmarketplace' => [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST_MARKETPLACE', 'localhost'),
+            'port' => env('DB_PORT_MARKETPLACE', '3306'),
+            'database' => env('DB_DATABASE_MARKETPLACE', 'phpfmv_gpmarketplace'),
+            'username' => env('DB_USERNAME', 'forge'),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
