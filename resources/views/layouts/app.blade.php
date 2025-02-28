@@ -3,22 +3,67 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', 'Laravel') }}</title>
-
-    <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
+    <title>@yield('title', 'Dashboard')</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
-    <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    <style>
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #2c3e50;
+            padding-top: 20px;
+            color: white;
+            transition: width 0.3s ease;
+            overflow-x: hidden;
+            position: fixed;
+            left: 0;
+            top: 40px;
+            bottom: 0;
+        }
+        .sidebar ul {
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar ul li {
+            list-style: none;
+            text-align: left;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            width: 100%;
+        }
+        .sidebar ul li a:hover,
+        .sidebar ul li a.active {
+            background: #fff;
+            color: #2c3e50;
+        }
+        .sidebar.collapsed {
+            width: 60px;
+        }
+        .sidebar.collapsed ul li a span {
+            display: none;
+        }
+        .sidebar ul li a i {
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+            <button class="toggle-btn" id="sidebarToggle"><i class="fas fa-bars"></i></button>
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
                     {{ config('app.name', 'Laravel') }}
@@ -28,14 +73,11 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
 
                     </ul>
 
-                    <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ms-auto">
-                        <!-- Authentication Links -->
                         @guest
                             @if (Route::has('login'))
                                 <li class="nav-item">
@@ -73,7 +115,37 @@
 
         <main class="py-4">
             @yield('content')
+            <div class="sidebar" id="sidebar">
+                <ul>
+                    <li><a href="{{ route('home') }}"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                    <li><a href="{{ route('res-settings-view') }}"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+                    <li><a href="{{ route('res-orders-view') }}"><i class="fas fa-shopping-cart"></i> <span>Orders</span></a></li>
+                    <li><a href="{{ route('reseller_price_diff_view') }}"><i class="fas fa-store"></i> <span>Price Structure Change</span></a></li>
+                </ul>
+            </div>
         </main>
     </div>
 </body>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
+    <script src="{{asset('assets/js/popper.min.js')}}"></script>
+    <script src="{{asset('assets/js/bootstrap.min.js')}}"></script>
+    @stack('scripts')
+
+    <script>
+        $(document).ready(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            $("#sidebarToggle").click(function() {
+                $("#sidebar").toggleClass("collapsed");
+                $("#contentWrapper").toggleClass("expanded");
+            });
+        });
+    </script>
 </html>

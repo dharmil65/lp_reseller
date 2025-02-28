@@ -25,6 +25,17 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 Route::middleware(['auth', 'role:reseller'])->group(function () {
     Route::get('/reseller/dashboard', [ResellerController::class, 'index']);
+
+    Route::get('/res-settings-view', [ResellerController::class, 'viewSettings'])->name('res-settings-view');
+    
+    Route::get('/res-orders-view', [ResellerController::class, 'viewOrders'])->name('res-orders-view');
+    
+    Route::get('/reseller_price_diff_view', [ResellerController::class, 'viewPriceChangePage'])->name('reseller_price_diff_view');
+
+    Route::post('/update-commission-reseller', [ResellerController::class, 'updateCommissionReseller'])->name('update-commission-reseller');
+
+    Route::post('/submitAPIKey', [ResellerController::class, 'submitAPIKey'])->name('submitAPIKey');
+
 });
 
 Route::middleware(['auth', 'role:advertiser'])->group(function () {
