@@ -38,7 +38,7 @@
                             <img src="{{ asset('assets/latest_assets_new/images/new-logo.svg') }}" loading="lazy" alt="logo"></a>
                         </div>
                         <h2>Log In</h2>
-                        <form id="login_user" action="{{ route('login-client.post') }}" method="POST">
+                        <form id="login_user" action="{{ url('/api/login-client') }}" method="POST">
                             @csrf
                             <input type="hidden" name="reseller_id" id="reseller_id" value="{{ isset($reseller->id) ? $reseller->id : '' }}">
                             <input type="hidden" name="reseller_name" id="reseller_name" value="{{ isset($reseller->name) ? $reseller->name : '' }}">
@@ -186,6 +186,23 @@
                 submitHandler: function(form) {
                     form.submit();
                 }
+            });
+
+            $("#login_user").submit(function (e) {
+                e.preventDefault();
+
+                let formData = $(this).serialize();
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: "POST",
+                    data: formData,
+                    success: function (response) {
+                        if (response.success) {
+                            window.location.href = response.redirect_url;
+                        }
+                    }
+                });
             });
 
             $('#toggleLogInPassword').click(function() {
