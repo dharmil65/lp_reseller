@@ -24,18 +24,16 @@
             <div class="form-wrapper">
                 <div class="login-sign-wrapper">
                     <div class="login-sign-form">
-                        @if(session()->has('success'))
-                            <div class="alert alert-success alert-dismissible" style="margin: 10px;">
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                {{ session()->get('success') }}
-                            </div>
-                        @endif
                         @if(session()->has('error'))
                             <div class="alert alert-danger alert-dismissible" style="margin: 10px;">
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                                 {{ session()->get('error') }}
                             </div>
                         @endif
+                        <div class="alert alert-success alert-dismissible" style="margin: 10px;display:none;">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            {{ session()->get('success') }}
+                        </div>
                         <div class="logo-section">
                             <img src="{{ asset('assets/latest_assets_new/images/new-logo.svg') }}" loading="lazy" alt="logo"></a>
                         </div>
@@ -135,6 +133,12 @@
 
     <script>
         $(document).ready(function() {
+
+            let successMessage = sessionStorage.getItem('success_message');
+            if (successMessage) {
+                $('.alert-success').show().text(successMessage).show();
+                sessionStorage.removeItem('success_message');
+            }
 
             var redirectTo = "{{ session('redirectTo') }}";
             if (redirectTo && redirectTo == "user-login") {

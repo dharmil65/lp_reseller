@@ -38,7 +38,7 @@
                             <img src="{{ asset('assets/latest_assets_new/images/new-logo.svg') }}" loading="lazy" alt="logo"></a>
                         </div>
                          <h2>Sign up for free</h2>
-                        <form id="register_user" action="{{ route('register-client') }}" method="POST">
+                        <form id="register_user" action="{{ url('/api/register-client') }}" method="POST">
                             @csrf
                             <input type="hidden" name="reseller_id" id="reseller_id" value="{{ isset($reseller->id) ? $reseller->id : '' }}">
                             <input type="hidden" name="reseller_name" id="reseller_name" value="{{ isset($reseller->name) ? $reseller->name : '' }}">
@@ -343,17 +343,21 @@
                 }
             });
 
-            var count = 0;
-            $('#register').on("click", function(e){ 
-                var registerForm = $("#register_user").valid();
-                if(registerForm){
-                    count += 1;
-                    if (count == 1 ) {
-                        return true;
-                    }else{
-                        return false;
+            $('#register_user').on('submit', function (e) {
+                e.preventDefault();
+                let formData = $(this).serialize();
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        if (response.success) {
+                            sessionStorage.setItem('success_message', response.message);
+                            window.location.href = response.redirect_url;
+                        }
                     }
-                }            
+                });
             });
 
             $("body").on('keyup', '#name', function(){

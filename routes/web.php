@@ -23,10 +23,6 @@ Route::get('/', function () {
 Route::get('register-client', [RegisterController::class, 'showClientRegisterForm'])
     ->name('register-client-form');
 
-Route::post('register-client', [RegisterController::class, 'clientRegister'])
-    ->withoutMiddleware(['auth'])
-    ->name('register-client');
-
 Route::get('login-client', [LoginController::class, 'showLoginForm'])->name('login-client');
 
 Route::post('login-client', [LoginController::class, 'login'])->name('login-client.post');
