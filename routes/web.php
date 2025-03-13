@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +16,16 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('register-client-form');
 });
+
+Route::get('register-client', [RegisterController::class, 'showClientRegisterForm'])
+    ->name('register-client-form');
+
+Route::post('register-client', [RegisterController::class, 'clientRegister'])
+    ->withoutMiddleware(['auth'])
+    ->name('register-client');
+
+Route::get('login-client', [LoginController::class, 'showLoginForm'])->name('login-client');
+
+Route::post('login-client', [LoginController::class, 'login'])->name('login-client.post');
