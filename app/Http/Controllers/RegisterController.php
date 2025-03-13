@@ -35,15 +35,13 @@ class RegisterController extends Controller
 
     public function clientRegister(Request $request)
     {
-        dd("A");
         $resellerData = [];
         $resellerId = 1;
 
         try {
             $domain = rtrim(request()->getScheme() . '://' . parse_url(URL::full(), PHP_URL_HOST), '/');
 
-            $checkDomainInReseller = DB::connection('lp_reseller')
-                ->table('resellers')
+            $checkDomainInReseller = DB::table('resellers')
                 ->whereRaw("TRIM(TRAILING '/' FROM domain) = ?", [$domain])
                 ->first();
 
@@ -51,10 +49,10 @@ class RegisterController extends Controller
                 $resellerId = $checkDomainInReseller->id;
             }
 
-            $checkIfReseller = DB::connection('lp_reseller')->table('resellers')->where('email', $request->email)->exists();
+            $checkIfReseller = DB::table('resellers')->where('email', $request->email)->exists();
             if ($checkIfReseller) {
-                $checkInUsers = DB::connection('lp_reseller')->table('users')->where('email', $request->email)->where('is_reseller', 1)->first();
-                $checkInReseller = DB::connection('lp_reseller')->table('resellers')->where('email', $request->email)->first();
+                $checkInUsers = DB::table('users')->where('email', $request->email)->where('is_reseller', 1)->first();
+                $checkInReseller = DB::table('resellers')->where('email', $request->email)->first();
 
                 if ($checkInUsers && $checkInReseller) {
 
@@ -71,7 +69,7 @@ class RegisterController extends Controller
             }
 
             if ($request->email) {
-                $resellerUser = DB::connection('lp_reseller')->table('reseller_users')->where('email', $request->email)->first();
+                $resellerUser = DB::table('reseller_users')->where('email', $request->email)->first();
                 if ($resellerUser) {
                     Session::put('auth_user', (array) $resellerUser);
                     Auth::setUser(new ResellerAuthUser($resellerUser));
@@ -84,18 +82,24 @@ class RegisterController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'email_verified_at' =>  Carbon::now()->toDateTimeString(),
+                'email_verified_at' => Carbon::now()->toDateTimeString(),
+                'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
-            DB::connection('lp_reseller')->table('reseller_users')->insert($resellerData);
-        } catch (Exception $e) {
-            \Log::error(['error while adding reseller in another database: ' => $e->getMessage()]);
-        }
-
-        if (!empty($resellerData)) {
             
-            try {
+            $userId = DB::table('reseller_users')->insertGetId($resellerData);
+            
+            $resellerDataForLpOwnDb = $resellerData;
+            $resellerDataForLpOwnDb['reseller_userid'] = $resellerDataForLpOwnDb['reseller_id'];
+            unset($resellerDataForLpOwnDb['reseller_id']);
+            
+            $checkIfExistsInLPReseller = DB::connection('lp_own_db')->table('reseller_users')->where('email', $request->email)->exists();
+            $checkIfExistsInLPUsers = DB::connection('lp_own_db')->table('users')->where('email', $request->email)->exists();
+            if (!$checkIfExistsInLPReseller && !$checkIfExistsInLPUsers) {
+                
+                DB::connection('lp_own_db')->table('reseller_users')->insert($resellerDataForLpOwnDb);
+
                 $user = [
                     'name' => $resellerData['name'],
                     'email' => $resellerData['email'],
@@ -103,41 +107,46 @@ class RegisterController extends Controller
                     'register_from'=> "reseller_client",
                     'popup_status' => 1,
                     'stage' => "total",
+                    'billing_country_name' => ''
                 ];
-                
-                $userId = DB::connection('lp_reseller')->table('users')->insertGetId($user);
-                
-                $userForOwnDb = $user;
-                $userForOwnDb['billing_country_name'] = '';
-                $use_id = DB::connection('lp_own_db')->table('users')->insertGetId($userForOwnDb);
 
-                $last_id = DB::connection('lp_reseller')->table('wallets')->max('id'); 
+                DB::connection('lp_own_db')->table('users')->insert($user);
+            }
+        } catch (Exception $e) {
+            \Log::error(['error while adding reseller in another database: ' => $e->getMessage()]);
+        }
+
+        if (!empty($resellerData)) {
+            try {
+                $last_id = DB::table('wallets')->max('id');
                 $last_id = $last_id ? $last_id + 1 : 1;
-
+                
                 $unique_transaction_id = 'REWARD25-' . date('Ymd') . $last_id;
                 $unique_order_id = $this->generateOrderId();
 
-                while (DB::connection('lp_reseller')->table('wallets')->where('transaction_id', $unique_transaction_id)->exists()) {
+                while (DB::table('wallets')->where('transaction_id', $unique_transaction_id)->exists()) {
                     $last_id++;
                     $unique_transaction_id = 'REWARD25-' . date('Ymd') . $last_id;
                 }
 
-                DB::connection('lp_reseller')->table('wallets')->insertGetId([
-                    'user_id' => $userId,
-                    'reseller_id' => session('reseller_id') ?? 1,
-                    'transaction_id' => $unique_transaction_id,
+                $wal = [
+                    'user_id' => $userId ?? null,
+                    'reseller_id' => 1,
+                    'transaction_id' => $unique_transaction_id ?? null,
                     'admin_credit_debit' => 'debit',
                     'added_desc' => 'Signup Bonus',
                     'table_type' => 'fund',
                     'amount' => 100,
                     'total' => 100,
                     'description' => 'Bonus Added',
-                    'order_id' => $unique_order_id,
+                    'order_id' => $unique_order_id ?? null,
                     'credit_or_debit' => 'Credit',
                     'provider' => 'wallet',
                     'status' => 'complete',
-                ]);
-                
+                ];
+
+                DB::table('wallets')->insert($wal);
+
                 return redirect()->route('login-client')->with(['success' => 'Registration successful!']);
             } catch (Exception $e) {
                 \Log::error(['error while adding reseller in another database: ' => $e->getMessage()]);
@@ -147,20 +156,13 @@ class RegisterController extends Controller
 
     private function generateOrderId() {
         do {
-            $wallet = DB::connection('lp_reseller')->table('wallets')->orderBy('id', 'desc')->first(['id']);
-
+            $wallet = DB::table('wallets')->orderBy('id', 'desc')->first(['id']);
             $newId = $wallet ? $wallet->id : 0;
-
-            if (env('APP_ENV') == 'local') {
-                $unique_order_id = '#10' . str_pad($newId + 15000 + 1, 9, "0", STR_PAD_LEFT);
-            } else {
-                $unique_order_id = '#10' . str_pad($newId + 1, 8, "0", STR_PAD_LEFT);
-            }
-
-            $exists = DB::connection('lp_reseller')->table('wallets')->where('order_id', $unique_order_id)->exists();
-            
+            $randomDigits = rand(10000, 99999);
+            $unique_order_id = '#10' . str_pad($newId + 1, 8, "0", STR_PAD_LEFT) . $randomDigits;
+            $exists = DB::table('wallets')->where('order_id', $unique_order_id)->exists();
         } while ($exists);
-
+    
         return $unique_order_id;
     }
 }

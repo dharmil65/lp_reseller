@@ -63,6 +63,34 @@ return [
             ]) : [],
         ],
 
+        'lp_reseller' => [
+            'driver' => 'mysql',
+            'host' => '192.168.5.233',
+            'port' => '10049',
+            'database' => 'lp_reseller',
+            'username' => 'root',
+            'password' => 'sheep',
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
+        'lp_own_db' => [
+            'driver' => 'mysql',
+            'host' => '192.168.5.233',
+            'port' => '10049',
+            'database' => 'phpfmv_gpmarketplace',
+            'username' => 'root',
+            'password' => 'sheep',
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
