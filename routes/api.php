@@ -17,7 +17,7 @@ use App\Http\Controllers\Api\MarketplaceAPIController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::middleware('auth.token')->get('/user', function (Request $request) {
     return $request->user();
 });
 

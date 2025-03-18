@@ -31,7 +31,7 @@ class LoginAPIController extends Controller
                         'reseller_id' => $checkInReseller->id,
                         'reseller_name' => $checkInReseller->name,
                         'user_data' => $checkInUsers ?? null,
-                        'redirect_url' => route('client_marketplace') // Add redirect URL
+                        'redirect_url' => route('client_marketplace')
                     ]);
                 }
             }
@@ -44,6 +44,12 @@ class LoginAPIController extends Controller
             $authUser = new ResellerAuthUser($resellerUser);
             Auth::setUser($authUser);
 
+            $token = Str::random(30);
+
+            DB::table('reseller_users')->where('id', $resellerUser->id)->update([
+                'remember_token' => $token
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',
@@ -51,6 +57,7 @@ class LoginAPIController extends Controller
                     'id' => $resellerUser->id,
                     'name' => $resellerUser->name,
                     'email' => $resellerUser->email,
+                    'token' => $token,
                 ],
                 'redirect_url' => route('client_marketplace')
             ]);
