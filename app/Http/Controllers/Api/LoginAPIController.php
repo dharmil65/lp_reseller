@@ -43,13 +43,16 @@ class LoginAPIController extends Controller
         if ($resellerUser && Hash::check($request->login_password, $resellerUser->password)) {
             $authUser = new ResellerAuthUser($resellerUser);
             Auth::setUser($authUser);
-
-            $token = Str::random(30);
-
-            DB::table('reseller_users')->where('id', $resellerUser->id)->update([
-                'remember_token' => $token
-            ]);
-
+        
+            $token = $resellerUser->remember_token;
+        
+            if (!$token) {
+                $token = Str::random(30);
+                DB::table('reseller_users')->where('id', $resellerUser->id)->update([
+                    'remember_token' => $token
+                ]);
+            }
+        
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',

@@ -44,7 +44,7 @@ class RegisterAPIController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'email_verified_at' => Carbon::now()->toDateTimeString(),
-                'remember_token' => Str::random(10),
+                // 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

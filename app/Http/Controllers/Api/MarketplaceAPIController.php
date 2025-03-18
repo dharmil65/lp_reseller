@@ -18,7 +18,10 @@ class MarketplaceAPIController extends Controller
 {
     public function fetchMarketplaceData(Request $request)
     {
-        $userId = DB::table('reseller_users')->where('email', session('email'))->value('id');
+        $authorizationHeader = $request->header('Authorization');
+        $token = str_replace('Bearer ', '', $authorizationHeader);
+
+        $userId = DB::table('reseller_users')->where('remember_token', $token)->value('id');
 
         $cart_data = DB::table('carts')
             ->select('reseller_id', 'status', 'advertiser_id', 'website_id')

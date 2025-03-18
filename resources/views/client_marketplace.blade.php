@@ -320,6 +320,9 @@ $(document).ready(function () {
             url: "{{ url('/api/fetch-marketplace-data') }}",
             type: "GET",
             dataType: "json",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("api_token"),
+            },
             data: function(d) {
                 d.search = $('#marketplace_search').val();
                 d.marketplaceType = 0;
