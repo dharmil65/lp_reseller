@@ -85,4 +85,82 @@ class MarketplaceAPIController extends Controller
             'message' => $websiteData->isEmpty() ? 'No data found' : '',
         ], $websiteData->isEmpty() ? 404 : 200);
     }
+
+    public function cartStore(Request $request)
+    {
+        $advertiser_id = Auth::id() ?? $request->clientId;
+        $reseller_id = $request->resellerId ?? 1;
+        $marketplaceType = $request->marketplaceType;
+        $website_id = $request->website_id;
+
+        if ($request->action == 'add') {
+            $cartItem = DB::table('carts')
+                ->where('advertiser_id', $advertiser_id)
+                ->where('website_id', $website_id)
+                ->where('marketplace_type', $marketplaceType)
+                // ->where('project_id', auth()->user()->current_project_selected)
+                ->first();
+
+            if ($cartItem) {
+                if ($cartItem->status == 1) {
+                    DB::table('carts')
+                        ->where('advertiser_id', $advertiser_id)
+                        ->where('website_id', $website_id)
+                        ->where('marketplace_type', $marketplaceType)
+                        ->update(['status' => 0]);
+                } 
+            } else {
+                $websiteData = DB::connection('lp_own_db')->table('advertiser_marketplace')
+                    ->select(
+                        'guest_post_price', 'linkinsertion_price',
+                        'forbidden_category_guest_post_price', 'forbidden_category_linkinsertion_price',
+                        'without_commission_guest_post_price', 'without_commission_linkinsertion_price',
+                        'without_commission_fc_guest_post_price', 'without_commission_fc_linkinsertion_price'
+                    )
+                    ->where('website_id', $website_id)
+                    ->first();
+
+                    $guestPostPrice = $marketplaceType == 1 ? $websiteData->forbidden_category_guest_post_price : $websiteData->guest_post_price;
+                    $linkInsertionPrice = $marketplaceType == 1 ? $websiteData->forbidden_category_linkinsertion_price : $websiteData->linkinsertion_price;
+                    $withoutCommissionGuestPostPrice = $marketplaceType == 1 ? $websiteData->without_commission_fc_guest_post_price : $websiteData->without_commission_guest_post_price;
+                    $withoutCommissionLinkInsertionPrice = $marketplaceType == 1 ? $websiteData->without_commission_fc_linkinsertion_price : $websiteData->without_commission_linkinsertion_price;
+
+                DB::table('carts')->insert([
+                    'advertiser_id' => $advertiser_id,
+                    'reseller_id' => $reseller_id ?? 1,
+                    'website_id' => $website_id,
+                    // 'source' => 'competitorsBacklinkAnalysis',
+                    'price' => $guestPostPrice,
+                    'link_insertion_price' => $linkInsertionPrice,
+                    'wihthout_commission_guest_post_price' => $withoutCommissionGuestPostPrice,
+                    'wihthout_commission_linkinsertion_price' => $withoutCommissionLinkInsertionPrice,
+                    'total' => $guestPostPrice ?? $linkInsertionPrice,
+                    'status' => 0,
+                    'marketplace_type' => $marketplaceType,
+                    // 'project_id' => auth()->user()->current_project_selected,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        } else {
+            DB::table('carts')
+                ->where('website_id', $website_id)
+                ->where('marketplace_type', $marketplaceType)
+                // ->where('project_id', auth()->user()->current_project_selected)
+                ->delete();
+        }
+
+        $cartTotal = DB::table('carts')
+            ->where('advertiser_id', $advertiser_id)
+            ->where('status', 0)
+            ->count();
+
+        session(['end_client_cart_total' => $cartTotal]);
+
+        return response()->json([
+            'success' => 'true', 
+            'message' => $request->action == 'add' ? 'Added to cart successfully' : 'Removed from cart successfully',
+            'cartTotal' => $cartTotal
+        ]);
+    }
 }

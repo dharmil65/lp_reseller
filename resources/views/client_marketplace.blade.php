@@ -260,108 +260,155 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
 $(document).ready(function () {
-    window.setTimeout(function() {
-        $('#marketplaceTable').DataTable({
-            serverSide: true,
-            ajax: {
-                url: "{{ url('/api/fetch-marketplace-data') }}",
-                type: "GET",
-                dataType: "json",
-                data: function(d) {
-                    d.search = $('#marketplace_search').val();
-                    d.marketplaceType = 0;
-                    d.page_per_size = 25;
-                    d.page = 1;
+    $('#marketplaceTable').DataTable({
+        serverSide: true,
+        ajax: {
+            url: "{{ url('/api/fetch-marketplace-data') }}",
+            type: "GET",
+            dataType: "json",
+            data: function(d) {
+                d.search = $('#marketplace_search').val();
+                d.marketplaceType = 0;
+                d.page_per_size = 25;
+                d.page = 1;
+            }
+        },
+        pageLength: 25,
+        pagingType: "simple",
+        info: false,
+        lengthChange: false,
+        searching: false,
+        columns: [
+            {
+                data: "host_url",
+                render: function (data, type, row) {
+                    let formattedUrl = data && !data.startsWith('http') ? 'https://' + data : data;
+                    let hostUrl = data ? `<a href="${formattedUrl}" target="_blank"><strong>${data}</strong></a>` : '--';
+
+                    let categories = row.category ? row.category.split(',').map(item => item.trim()) : [];
+                    let firstCategory = categories.length > 0 ? categories[0] : 'N/A';
+                    let extraCategories = categories.slice(1);
+
+                    let categoryHtml = `<span>${firstCategory}</span>`;
+                    if (extraCategories.length > 0) {
+                        categoryHtml += `
+                            <span class="category-tooltip" data-toggle="tooltip" data-html="true" title="${extraCategories.join(', ')}">
+                                +${extraCategories.length}
+                            </span>
+                        `;
+                    }
+
+                    return `
+                        <div class="website">${hostUrl}</div>
+                        <div>Category: ${categoryHtml}</div>
+                    `;
                 }
             },
-            pageLength: 25,
-            pagingType: "simple",
-            info: false,
-            lengthChange: false,
-            searching: false,
-            columns: [
-                {
-                    data: "host_url",
-                    render: function (data, type, row) {
-                        let formattedUrl = data && !data.startsWith('http') ? 'https://' + data : data;
-                        let hostUrl = data ? `<a href="${formattedUrl}" target="_blank"><strong>${data}</strong></a>` : '--';
-
-                        let categories = row.category ? row.category.split(',').map(item => item.trim()) : [];
-                        let firstCategory = categories.length > 0 ? categories[0] : 'N/A';
-                        let extraCategories = categories.slice(1);
-
-                        let categoryHtml = `<span>${firstCategory}</span>`;
-                        if (extraCategories.length > 0) {
-                            categoryHtml += `
-                                <span class="category-tooltip" data-toggle="tooltip" data-html="true" title="${extraCategories.join(', ')}">
-                                    +${extraCategories.length}
-                                </span>
-                            `;
-                        }
-
-                        return `
-                            <div class="website">${hostUrl}</div>
-                            <div>Category: ${categoryHtml}</div>
-                        `;
-                    }
-                },
-                { data: "da", defaultContent: '--' },
-                { data: "ahref", defaultContent: '0' },
-                { data: "semrush", defaultContent: '0' },
-                { data: "tat", defaultContent: '--' },
-                { data: "backlink_count", defaultContent: '--' },
-                { 
-                    data: "guest_post_price", 
-                    defaultContent: '--',
-                    render: function(data, type, row) {
-                        return data ? '$' + data : '--';
-                    }
-                },
-                { 
-                    data: "linkinsertion_price", 
-                    defaultContent: '--',
-                    render: function(data, type, row) {
-                        return data ? '$' + data : '--';
-                    }
-                },
-                {
-                    data: "wishlist",
-                    orderable: false,
-                    searchable: false,
-                    render: function (data, type, row) {
-                        let isInWishlist = cartStatus[row.website_id] !== undefined && cartStatus[row.website_id] == 1;
-
-                        return `
-                            <a href="#" class="btn button btn-primary cart_wishlist_cta wishlist-btn ${isInWishlist ? 'active' : ''}"
-                                data-wishlist="${row.website_id}" data-action="add" id="wishlist_${row.website_id}" 
-                                data-name="${row.host_url}">
-                                <i class="far fa-heart"></i>
-                            </a>
-                        `;
-                    }
-                },
-                {
-                    data: "cart",
-                    orderable: false,
-                    searchable: false,
-                    render: function (data, type, row) {
-                        let isInCart = cartStatus[row.website_id] !== undefined && cartStatus[row.website_id] == 0;
-
-                        return `
-                            <a rel="nofollow" class="btn button btn-primary cart_btn ${isInCart ? 'active' : ''}"
-                                id="cart_${row.website_id}" data-cart="${row.website_id}" 
-                                data-action="${isInCart ? 'delete' : 'add'}" data-name="${row.host_url}">
-                                <img src="{{ asset('assets/images/buy.png') }}" alt="buy" id="img_${row.website_id}">
-                                <span>${isInCart ? 'Added' : 'Add'}</span>
-                            </a>
-                        `;
-                    }
+            { data: "da", defaultContent: '--' },
+            { data: "ahref", defaultContent: '0' },
+            { data: "semrush", defaultContent: '0' },
+            { data: "tat", defaultContent: '--' },
+            { data: "backlink_count", defaultContent: '--' },
+            { 
+                data: "guest_post_price", 
+                defaultContent: '--',
+                render: function(data, type, row) {
+                    return data ? '$' + data : '--';
                 }
-            ],
-            rowCallback: function(row, data, index) {
-                $(row).addClass('table-detail');
+            },
+            { 
+                data: "linkinsertion_price", 
+                defaultContent: '--',
+                render: function(data, type, row) {
+                    return data ? '$' + data : '--';
+                }
+            },
+            {
+                data: "wishlist",
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    let isInWishlist = cartStatus[row.website_id] !== undefined && cartStatus[row.website_id] == 1;
+
+                    return `
+                        <a href="#" class="btn button btn-primary cart_wishlist_cta wishlist-btn ${isInWishlist ? 'active' : ''}"
+                            data-wishlist="${row.website_id}" data-action="add" id="wishlist_${row.website_id}" 
+                            data-name="${row.host_url}">
+                            <i class="far fa-heart"></i>
+                        </a>
+                    `;
+                }
+            },
+            {
+                data: "cart",
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    let isInCart = cartStatus[row.website_id] !== undefined && cartStatus[row.website_id] == 0;
+
+                    return `
+                        <a rel="nofollow" class="btn button btn-primary cart_btn ${isInCart ? 'active' : ''}"
+                            id="cart_${row.website_id}" data-cart="${row.website_id}" 
+                            data-action="${isInCart ? 'delete' : 'add'}" data-name="${row.host_url}">
+                            <img src="{{ asset('assets/images/buy.png') }}" alt="buy" id="img_${row.website_id}">
+                            <span>${isInCart ? 'Added' : 'Add'}</span>
+                        </a>
+                    `;
+                }
+            }
+        ],
+        rowCallback: function(row, data, index) {
+            $(row).addClass('table-detail');
+        }
+    });
+
+    $(document).on('click', '.cart_btn', function () {
+        var website_id = $(this).attr('data-cart');
+        var action = $(this).attr('data-action');
+        var host_url = $(this).attr('data-name');
+        var clientId = $('#end_client_id').val();
+
+        $.ajax({
+            type: "POST",
+            url: "/api/cart/store",
+            contentType: "application/json",  
+            data: JSON.stringify({
+                website_id: website_id,
+                action: action,
+                marketplaceType: 0,
+                competitorsBacklinkAnalysis: true,
+                clientId: clientId,
+            }),
+            dataType: 'json',
+            success: function (response) {
+                var newAction = action === 'add' ? 'delete' : 'add';
+                var newText = newAction === 'add' ? 'Add' : 'Added';
+
+                $('#cart_' + website_id).children('span').text(newText);
+                $('#cart_' + website_id).toggleClass('active', newAction === 'delete');
+                $('#cart_' + website_id).attr('data-action', newAction);
+                toastr.success(response.message);
+
+                if (newAction === 'delete') {
+                    $('#wishlist_' + website_id).removeClass('active').attr('data-action', 'add')
+                        .find('i').removeClass('fas fa-heart').addClass('far fa-heart');
+                    $('#blocksites_' + website_id).addClass('disabled');
+                } else {
+                    $('#blocksites_' + website_id).removeClass('disabled');
+                }                    
+
+                $('#cartcount').text(response.cartTotal);
+                if (response.cartTotal == 0) {
+                    $('#cartcount').addClass('d-none').text('');
+                } else {
+                    $('#cartcount').removeClass('d-none').text(response.cartTotal);
+                }
+            },
+            error: function (xhr) {
+                toastr.error("Something went wrong");
             }
         });
-    }, 500);
+    });
+
 });
 </script>

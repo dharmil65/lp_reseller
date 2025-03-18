@@ -26,3 +26,5 @@ Route::post('reg-client', [RegisterAPIController::class, 'clientRegister']);
 Route::post('loginClient', [LoginAPIController::class, 'apiLogin']);
 
 Route::get('/fetch-marketplace-data', [MarketplaceAPIController::class, 'fetchMarketplaceData']);
+
+Route::post('/cart/store', [MarketplaceAPIController::class, 'cartStore'])->name('cart.store');
