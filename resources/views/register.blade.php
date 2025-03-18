@@ -30,6 +30,10 @@
                 {{ session()->get('error') }}
             </div>
         @endif
+        <div class="alert alert-danger errorMsgClass" style="display:none;">
+            <span class="columnError"></span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+        </div>
         <div class="login-sign-detail" id="registerForm">
             <div class="form-wrapper">
                 <div class="login-sign-wrapper">
@@ -351,7 +355,12 @@
                         } else {
                             sessionStorage.setItem('error_message', response.message);
                             if (response.redirect_url) {
-                                window.location.href = response.redirect_url;
+                                $('.errorMsgClass').css('display', 'block');
+                                $('.columnError').html(response.message);
+                                window.setTimeout(function(){
+                                    $('.errorMsgClass').fadeOut('slow');
+                                    window.location.href = response.redirect_url;
+                                }, 2000);
                             }
                         }
                     }

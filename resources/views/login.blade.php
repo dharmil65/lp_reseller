@@ -34,6 +34,10 @@
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                             {{ session()->get('success') }}
                         </div>
+                        <div class="alert alert-danger errorMsgClass" style="display:none;">
+                            <span class="columnError"></span>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        </div>
                         <div class="logo-section">
                             <img src="{{ asset('assets/latest_assets_new/images/new-logo.svg') }}" loading="lazy" alt="logo"></a>
                         </div>
@@ -183,16 +187,25 @@
 
             $("#login_user").submit(function (e) {
                 e.preventDefault();
-
                 let formData = $(this).serialize();
-
+                
                 $.ajax({
                     url: $(this).attr('action'),
                     type: "POST",
                     data: formData,
+                    dataType: "json",
                     success: function (response) {
                         if (response.success) {
                             window.location.href = response.redirect_url;
+                        } else {
+                            $('.errorMsgClass').css('display', 'block');
+                            $('.columnError').html(response.message);
+
+                            setTimeout(function() {
+                                $('.errorMsgClass').fadeOut('slow', function() {
+                                    location.reload();
+                                });
+                            }, 2000);
                         }
                     }
                 });
