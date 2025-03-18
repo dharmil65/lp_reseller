@@ -46,4 +46,9 @@ class MarketplaceController extends Controller
 
         return view('client_marketplace', compact('cartStatus', 'cartsTotal', 'walletBalance'));
     }
+    
+    public function logout(Request $request)
+    {
+        return redirect()->route('register-client-form');
+    }
 }

@@ -26,3 +26,5 @@ Route::get('register-client', [RegisterController::class, 'showClientRegisterFor
 Route::get('login-client', [LoginController::class, 'showLoginForm'])->name('login-client');
 
 Route::get('/client_marketplace', [MarketplaceController::class, 'marketplaceView'])->name('client_marketplace');
+
+Route::get('/logout', [MarketplaceController::class, 'logout'])->name('logout');

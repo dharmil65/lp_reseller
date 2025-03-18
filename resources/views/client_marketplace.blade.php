@@ -230,25 +230,79 @@
         }
     </style>
 </head>
+<div class="main-wrapper">
+    <header class="site-header marketplace-header">
+        <div class="side-logo">
+            <a href="#"><img src="{{asset('assets/images/side-logo.png')}}" alt="side-logo" loading="lazy"></a>
+            <div class="balance" id="addFundsBtn">
+                <h5> {{ "$".$walletBalance ?? '' }} </h5>
+                <p> <span><img src="{{asset('assets/images/hedaer-plus.svg')}}" alt="hedaer-plus" loading="lazy"></span> Add Funds</p>
+            </div>
+        </div>
+        <nav class="main-navigation">
+            <ul>
+                <li><a href="#" class="">Dashboard</a></li>
+                <li><a href="{{ route('client_marketplace') }}" class="active">Marketplace</a></li>
+                <li><a href="" class="">My Orders</a></li>
+            </ul>
+        </nav>
+        <div class="menu-icon icon-menu">
+            <ul class="menu-icon-detail">
+                <li><a  id="wishlist_btn"><img src="{{asset('assets/images/heart.png')}}" alt="heart"><span class="notification-number d-none" loading="lazy" id="wishlistcount"></span></a></li>
+                <li><a id="cart_btn_header"><img src="{{ asset('assets/images/buy.png') }}" alt="buy"><span class="notification-number {{ isset($cartsTotal) && $cartsTotal > 0 ? '' : 'd-none' }}" loading="lazy" id="cartcount">{{ isset($cartsTotal) && $cartsTotal > 0 ? $cartsTotal : '' }}</span></a></li>
+                <li class="profile-wrapper dropdown">
+                    <a class="dropdown-toggle" href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{{ isset(Auth::user()->userDetails) && !empty( Auth::user()->userDetails->image ) ? url('profile') .'/' . Auth::user()->userDetails->image : asset('assets/images/no-image.png') }}" alt="profile" loading="lazy"></a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <li class="dropdown-item">
+                            <a href="javascript:void(0);">
+                                <span><img src="{{asset('assets/images/my-profile.png')}}" alt="profile">My Profile</span>
+                            </a>
+                        </li>
+                        <li class="dropdown-item">
+                            <a href="javascript:void(0);">
+                                <span><img src="{{asset('assets/images/my-profile.png')}}" alt="notify-team">Notify Team</span>
+                            </a>
+                        </li>
+                        <li class="dropdown-item">
+                            <a href="javascript:void(0);">
+                                <span><img src="{{asset('assets/images/billings.png')}}" alt="billings">Billings &amp; Funds</span>
+                            </a>
+                        </li>
+                        <li class="dropdown-item">
+                            <a id="logout_advertiser" href="{{ route('logout') }}">
+                                <span><img src="{{asset('assets/images/logout.png')}}" alt="logout">Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+   </header>
 
-<table id="marketplaceTable" class="table" width="100%" border="0">
-    <thead>
-        <tr class="table-header">
-            <th>Website URL</th>
-            <th>DA</th>
-            <th>Org. Traffic</th>
-            <th>Total Visits</th>
-            <th>TAT</th>
-            <th>Backlinks</th>
-            <th>Guest Post</th>
-            <th>Link Insertion</th>
-            <th class="cart_wishlist_cta"></th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-
+   <div class="site-wrapper">
+        <section class="marketplace-wrapper">
+            <div class="marketplace-table">
+                <table id="marketplaceTable" class="table" width="100%" border="0">
+                    <thead>
+                        <tr class="table-header">
+                            <th>Website URL</th>
+                            <th>DA</th>
+                            <th>Org. Traffic</th>
+                            <th>Total Visits</th>
+                            <th>TAT</th>
+                            <th>Backlinks</th>
+                            <th>Guest Post</th>
+                            <th>Link Insertion</th>
+                            <th class="cart_wishlist_cta"></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
 <script>
     var cartStatus = @json($cartStatus);
 </script>
