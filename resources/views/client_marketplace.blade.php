@@ -235,7 +235,7 @@
         <div class="side-logo">
             <a href="#"><img src="{{asset('assets/images/side-logo.png')}}" alt="side-logo" loading="lazy"></a>
             <div class="balance" id="addFundsBtn">
-                <h5> {{ "$".$walletBalance ?? '' }} </h5>
+                <h5> {{ isset($walletBalance) && !empty($walletBalance) ? "$".$walletBalance : '$0'}} </h5>
                 <p> <span><img src="{{asset('assets/images/hedaer-plus.svg')}}" alt="hedaer-plus" loading="lazy"></span> Add Funds</p>
             </div>
         </div>
