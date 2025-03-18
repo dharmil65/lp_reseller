@@ -20,6 +20,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('register-client', [RegisterAPIController::class, 'clientRegister']);
+Route::post('reg-client', [RegisterAPIController::class, 'clientRegister']);
 
-Route::post('login-client', [LoginAPIController::class, 'apiLogin']);
+Route::post('loginClient', [LoginAPIController::class, 'apiLogin']);

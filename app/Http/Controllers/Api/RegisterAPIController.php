@@ -35,7 +35,7 @@ class RegisterAPIController extends Controller
             }
 
             if (DB::table('reseller_users')->where('email', $request->email)->exists()) {
-                return response()->json(['message' => 'Email already registered. Please login.'], 409);
+                return response()->json(['success' => false, 'message' => 'Email already registered. Please login.', 'redirect_url' => route('login-client')]);
             }
 
             $resellerData = [
@@ -101,6 +101,8 @@ class RegisterAPIController extends Controller
                     'credit_or_debit' => 'Credit',
                     'provider' => 'wallet',
                     'status' => 'complete',
+                    'created_at' => now(),
+                    'updated_at' => now()
                 ]);
 
                 return response()->json(['success' => true, 'message' => 'Registration successful!', 'redirect_url' => route('login-client')]);

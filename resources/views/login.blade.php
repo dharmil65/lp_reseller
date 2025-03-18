@@ -38,7 +38,7 @@
                             <img src="{{ asset('assets/latest_assets_new/images/new-logo.svg') }}" loading="lazy" alt="logo"></a>
                         </div>
                         <h2>Log In</h2>
-                        <form id="login_user" action="{{ url('/api/login-client') }}" method="POST">
+                        <form id="login_user" action="{{ url('/api/loginClient') }}" method="POST">
                             @csrf
                             <input type="hidden" name="reseller_id" id="reseller_id" value="{{ isset($reseller->id) ? $reseller->id : '' }}">
                             <input type="hidden" name="reseller_name" id="reseller_name" value="{{ isset($reseller->name) ? $reseller->name : '' }}">
@@ -138,13 +138,6 @@
             if (successMessage) {
                 $('.alert-success').show().text(successMessage).show();
                 sessionStorage.removeItem('success_message');
-            }
-
-            var redirectTo = "{{ session('redirectTo') }}";
-            if (redirectTo && redirectTo == "user-login") {
-                window.setTimeout(function() {
-                    $('.user-login').trigger('click');
-                }, 300);
             }
 
             $.ajaxSetup({

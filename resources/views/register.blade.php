@@ -38,7 +38,7 @@
                             <img src="{{ asset('assets/latest_assets_new/images/new-logo.svg') }}" loading="lazy" alt="logo"></a>
                         </div>
                          <h2>Sign up for free</h2>
-                        <form id="register_user" action="{{ url('/api/register-client') }}" method="POST">
+                        <form id="register_user" action="{{ url('/api/reg-client') }}" method="POST">
                             @csrf
                             <input type="hidden" name="reseller_id" id="reseller_id" value="{{ isset($reseller->id) ? $reseller->id : '' }}">
                             <input type="hidden" name="reseller_name" id="reseller_name" value="{{ isset($reseller->name) ? $reseller->name : '' }}">
@@ -178,13 +178,6 @@
 
     <script>
         $(document).ready(function() {
-
-            var redirectTo = "{{ session('redirectTo') }}";
-            if (redirectTo && redirectTo == "user-page") {
-                window.setTimeout(function() {
-                    $('.user-page').trigger('click');
-                }, 300);
-            }
 
             $.ajaxSetup({
                 headers: {
@@ -355,6 +348,11 @@
                         if (response.success) {
                             sessionStorage.setItem('success_message', response.message);
                             window.location.href = response.redirect_url;
+                        } else {
+                            sessionStorage.setItem('error_message', response.message);
+                            if (response.redirect_url) {
+                                window.location.href = response.redirect_url;
+                            }
                         }
                     }
                 });
