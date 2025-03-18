@@ -1,1 +1,367 @@
-<h1> Welcome to Marketplace </h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    <title>Marketplace</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url('/css/advertiser_custom_new.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link href="{{ asset('vendors/iconic-fonts/font-awesome/css/all.min.css') }}" rel="stylesheet">
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .logout-container {
+            text-align: right;
+            margin: 20px;
+        }
+        .logout-btn {
+            background-color: #d9534f;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .logout-btn:hover {
+            background-color: #c9302c;
+        }
+        .site-header {
+            background: #275570;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .site-header .side-logo a img {
+            max-width: 200px;
+            padding: 0 15px;
+        }
+
+        .site-header .main-navigation ul {
+            display: flex;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .site-header .main-navigation ul li {
+            padding: 0;
+            opacity: 0.8;
+            font-size: 15px;
+            text-transform: capitalize;
+            font-weight: 300;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        .site-header .main-navigation ul li a {
+            color: #Ffff;
+            text-decoration: none;
+        }
+
+        .marketplace-header .menu-icon .menu-icon-detail {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+            justify-content: flex-end;
+            padding-left: 40px;
+            list-style: none;
+        }
+
+        .marketplace-header .menu-icon li a {
+            padding: 0 20px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .marketplace-header .menu-icon li a .notification-number {
+            position: absolute;
+            top: -10px;
+            right: 6px;
+            background: #fd6a3a;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 10px;
+            text-align: center;
+            min-width: 20px;
+            height: 20px;
+            line-height: 20px;
+            padding: 2px;
+        }
+
+        .marketplace-header .profile-wrapper {
+            border: 1px solid #fff;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .marketplace-header .menu-icon li a {
+            padding: 0 20px;
+            position: relative;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .marketplace-header .profile-wrapper a img {
+            padding-right: 5px;
+            max-width: 45px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .profile-wrapper .dropdown-toggle::after {
+            position: absolute;
+            top: 18px;
+        }
+
+        .marketplace-header .profile-wrapper .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 53px;
+            border-radius: 10px;
+            z-index: 9999;
+            font-size: 16px;
+            color: #212529;
+            text-align: left;
+            list-style: none;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid rgba(0, 0, 0, .15);
+            padding: 0;
+            width: 160px;
+            display: none;
+        }
+
+        .marketplace-header .profile-wrapper .dropdown-menu .dropdown-item {
+            padding-left: 15px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        .marketplace-header .profile-wrapper .dropdown-menu a {
+            color: #275570;
+            padding: 0;
+            font-size: 14px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-wrapper .dropdown-item a img {
+            padding-right: 10px;
+            max-width: 35px;
+            height: auto;
+            border-radius: 50%;
+        }
+
+        .marketplace-header li.profile-wrapper a {
+            padding: 0 20px 0 0;
+        }
+
+        .marketplace-wrapper {
+            padding: 0 15px;
+            display: flex;
+            align-items: baseline;
+            gap: 0 10px;
+        }  
+
+        .marketplace-wrapper .side-wrapper {
+            width: 20%;
+            padding-left: 0;
+        }
+
+        .marketplace-wrapper .marketplace-details {
+            width: 80%;
+        }
+
+        .marketplace-header .profile-wrapper .dropdown-menu.show {
+            display: block;
+        }
+
+        .side-logo {
+            display: flex;
+            align-items: center;
+            gap: 0 11px;
+        }
+
+        .side-logo h5 {
+            margin-bottom: 0;
+            color: #fff;
+            font-size: 30px;
+            font-weight: 700;
+        }
+
+        .marketplace-table table th {
+            white-space: normal;
+            word-break: break-word;
+            line-height: 1.2;
+        }
+
+        .marketplace-table table td {
+            text-align: center;
+        }
+
+        .marketplace-table table.dataTable thead .sorting,
+        .marketplace-table table.dataTable thead .sorting_asc {
+            background-image: none !important;
+        }
+
+        .table-detail td .cart_btn {
+            min-width: 110px;
+        }
+
+        .table-header th:first-child, .table-detail td:first-child {
+            width: auto !important;
+            word-break: break-word;
+        }
+
+        .cart_wishlist_cta {
+            width: 80px !important;
+        }
+
+        .website strong {
+            color: #f2652d;
+        }
+    </style>
+</head>
+
+<table id="marketplaceTable" class="table" width="100%" border="0">
+    <thead>
+        <tr class="table-header">
+            <th>Website URL</th>
+            <th>DA</th>
+            <th>Org. Traffic</th>
+            <th>Total Visits</th>
+            <th>TAT</th>
+            <th>Backlinks</th>
+            <th>Guest Post</th>
+            <th>Link Insertion</th>
+            <th class="cart_wishlist_cta"></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    var cartStatus = @json($cartStatus);
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script>
+$(document).ready(function () {
+    window.setTimeout(function() {
+        $('#marketplaceTable').DataTable({
+            serverSide: true,
+            ajax: {
+                url: "{{ url('/api/fetch-marketplace-data') }}",
+                type: "GET",
+                dataType: "json",
+                data: function(d) {
+                    d.search = $('#marketplace_search').val();
+                    d.marketplaceType = 0;
+                    d.page_per_size = 25;
+                    d.page = 1;
+                }
+            },
+            pageLength: 25,
+            pagingType: "simple",
+            info: false,
+            lengthChange: false,
+            searching: false,
+            columns: [
+                {
+                    data: "host_url",
+                    render: function (data, type, row) {
+                        let formattedUrl = data && !data.startsWith('http') ? 'https://' + data : data;
+                        let hostUrl = data ? `<a href="${formattedUrl}" target="_blank"><strong>${data}</strong></a>` : '--';
+
+                        let categories = row.category ? row.category.split(',').map(item => item.trim()) : [];
+                        let firstCategory = categories.length > 0 ? categories[0] : 'N/A';
+                        let extraCategories = categories.slice(1);
+
+                        let categoryHtml = `<span>${firstCategory}</span>`;
+                        if (extraCategories.length > 0) {
+                            categoryHtml += `
+                                <span class="category-tooltip" data-toggle="tooltip" data-html="true" title="${extraCategories.join(', ')}">
+                                    +${extraCategories.length}
+                                </span>
+                            `;
+                        }
+
+                        return `
+                            <div class="website">${hostUrl}</div>
+                            <div>Category: ${categoryHtml}</div>
+                        `;
+                    }
+                },
+                { data: "da", defaultContent: '--' },
+                { data: "ahref", defaultContent: '0' },
+                { data: "semrush", defaultContent: '0' },
+                { data: "tat", defaultContent: '--' },
+                { data: "backlink_count", defaultContent: '--' },
+                { 
+                    data: "guest_post_price", 
+                    defaultContent: '--',
+                    render: function(data, type, row) {
+                        return data ? '$' + data : '--';
+                    }
+                },
+                { 
+                    data: "linkinsertion_price", 
+                    defaultContent: '--',
+                    render: function(data, type, row) {
+                        return data ? '$' + data : '--';
+                    }
+                },
+                {
+                    data: "wishlist",
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, row) {
+                        let isInWishlist = cartStatus[row.website_id] !== undefined && cartStatus[row.website_id] == 1;
+
+                        return `
+                            <a href="#" class="btn button btn-primary cart_wishlist_cta wishlist-btn ${isInWishlist ? 'active' : ''}"
+                                data-wishlist="${row.website_id}" data-action="add" id="wishlist_${row.website_id}" 
+                                data-name="${row.host_url}">
+                                <i class="far fa-heart"></i>
+                            </a>
+                        `;
+                    }
+                },
+                {
+                    data: "cart",
+                    orderable: false,
+                    searchable: false,
+                    render: function (data, type, row) {
+                        let isInCart = cartStatus[row.website_id] !== undefined && cartStatus[row.website_id] == 0;
+
+                        return `
+                            <a rel="nofollow" class="btn button btn-primary cart_btn ${isInCart ? 'active' : ''}"
+                                id="cart_${row.website_id}" data-cart="${row.website_id}" 
+                                data-action="${isInCart ? 'delete' : 'add'}" data-name="${row.host_url}">
+                                <img src="{{ asset('assets/images/buy.png') }}" alt="buy" id="img_${row.website_id}">
+                                <span>${isInCart ? 'Added' : 'Add'}</span>
+                            </a>
+                        `;
+                    }
+                }
+            ],
+            rowCallback: function(row, data, index) {
+                $(row).addClass('table-detail');
+            }
+        });
+    }, 500);
+});
+</script>

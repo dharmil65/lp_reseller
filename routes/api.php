@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\RegisterAPIController;
 use App\Http\Controllers\Api\LoginAPIController;
+use App\Http\Controllers\Api\MarketplaceAPIController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,3 +24,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('reg-client', [RegisterAPIController::class, 'clientRegister']);
 
 Route::post('loginClient', [LoginAPIController::class, 'apiLogin']);
+
+Route::get('/fetch-marketplace-data', [MarketplaceAPIController::class, 'fetchMarketplaceData']);
