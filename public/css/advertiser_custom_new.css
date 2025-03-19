@@ -5481,7 +5481,7 @@ span.need-approval {
 }
 
 .reason-submit input[type="submit"] {
-    background-image: url('{{asset('assets/latest_assets_new/images/submit-icon.png')}}');
+    background-image: url('{{asset('assets/images/submit-icon.png')}}');
     width: 24px;
     height: 24px;
     background-repeat: no-repeat;

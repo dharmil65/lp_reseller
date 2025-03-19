@@ -39,7 +39,7 @@
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
                         </div>
                         <div class="logo-section">
-                            <img src="{{ asset('assets/latest_assets_new/images/new-logo.svg') }}" loading="lazy" alt="logo"></a>
+                            <img src="{{ asset('assets/images/new-logo.svg') }}" loading="lazy" alt="logo"></a>
                         </div>
                         <h2>Log In</h2>
                         <form id="login_user" action="{{ url('/api/loginClient') }}" method="POST">
@@ -69,17 +69,17 @@
                     </div>
                     <div class="client-review-wrapper">
                         <div class="christmas-login-wrapper" style="display:none">
-                            <img src="{{ asset('assets/latest_assets_new/images/christmas_Login_Signup.svg') }}" loading="lazy" alt="christmas_Login_Signup">
+                            <img src="{{ asset('assets/images/christmas_Login_Signup.svg') }}" loading="lazy" alt="christmas_Login_Signup">
                         </div>
                         <div class="background-animation">
-                            <img src="{{ asset('assets/latest_assets_new/images/review-first.svg') }}" loading="lazy" class="d1" alt="review-first">
-                            <img src="{{ asset('assets/latest_assets_new/images/review-second.svg') }}" loading="lazy" class="d2" alt="review-second">
-                            <img src="{{ asset('assets/latest_assets_new/images/review-thard.svg') }}" loading="lazy" class="d3" alt="review-thard">
+                            <img src="{{ asset('assets/images/review-first.svg') }}" loading="lazy" class="d1" alt="review-first">
+                            <img src="{{ asset('assets/images/review-second.svg') }}" loading="lazy" class="d2" alt="review-second">
+                            <img src="{{ asset('assets/images/review-thard.svg') }}" loading="lazy" class="d3" alt="review-thard">
                         </div>
                         <div class="advertiser-publisher-info">
                             <div class="client-advertiser">
                                 <div class="advertiser-info">
-                                    <img src="{{ asset('assets/latest_assets_new/images/advertiser.svg') }}" loading="lazy" alt="advertiser">
+                                    <img src="{{ asset('assets/images/advertiser.svg') }}" loading="lazy" alt="advertiser">
                                     <h5>advertiser</h5>
                                 </div>
                                 <ul>
@@ -91,7 +91,7 @@
 
                             <div class="client-publisher">
                                 <div class="publisher-info">
-                                    <img src="{{ asset('assets/latest_assets_new/images/publisher.svg') }}" loading="lazy" alt="publisher">
+                                    <img src="{{ asset('assets/images/publisher.svg') }}" loading="lazy" alt="publisher">
                                     <h5>publisher</h5>
                                 </div>
                                 <ul>
@@ -107,14 +107,14 @@
 
                             <div class="excellent-review">
                                 <ul>
-                                    <li><img src="{{ asset('assets/latest_assets_new/images/rating-star-full.svg') }}" loading="lazy" alt="rating-star-full"></li>
-                                    <li><img src="{{ asset('assets/latest_assets_new/images/rating-star-full.svg') }}" loading="lazy" alt="rating-star-full"></li>
-                                    <li><img src="{{ asset('assets/latest_assets_new/images/rating-star-full.svg') }}" loading="lazy" alt="rating-star-full"></li>
-                                    <li><img src="{{ asset('assets/latest_assets_new/images/rating-star-full.svg') }}" loading="lazy" alt="rating-star-full"></li>
-                                    <li><img src="{{ asset('assets/latest_assets_new/images/rating-star-half.svg') }}" loading="lazy" alt="rating-star-half"></li>
+                                    <li><img src="{{ asset('assets/images/rating-star-full.svg') }}" loading="lazy" alt="rating-star-full"></li>
+                                    <li><img src="{{ asset('assets/images/rating-star-full.svg') }}" loading="lazy" alt="rating-star-full"></li>
+                                    <li><img src="{{ asset('assets/images/rating-star-full.svg') }}" loading="lazy" alt="rating-star-full"></li>
+                                    <li><img src="{{ asset('assets/images/rating-star-full.svg') }}" loading="lazy" alt="rating-star-full"></li>
+                                    <li><img src="{{ asset('assets/images/rating-star-half.svg') }}" loading="lazy" alt="rating-star-half"></li>
                                 </ul>
                                 <p>4.8 out of 5</p>
-                                <img src="{{ asset('assets/latest_assets_new/images/Trustpilot-logo.svg') }}" loading="lazy" alt="Trustpilot-logo">
+                                <img src="{{ asset('assets/images/Trustpilot-logo.svg') }}" loading="lazy" alt="Trustpilot-logo">
                             </div>
                         </div>
                     </div>
