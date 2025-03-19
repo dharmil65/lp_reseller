@@ -19,13 +19,19 @@ class MarketplaceAPIController extends Controller
     public function fetchMarketplaceData(Request $request)
     {
         $authorizationHeader = $request->header('Authorization');
-        $token = str_replace('Bearer ', '', $authorizationHeader);
+        if (!$authorizationHeader || !Str::startsWith($authorizationHeader, 'Bearer ')) {
+            return response()->json([
+                'error' => 'Unauthorized. Token is required.',
+                'logout' => true
+            ], 401);
+        }
 
+        $token = str_replace('Bearer ', '', $authorizationHeader);
         $user = DB::table('reseller_users')->where('remember_token', $token)->first();
-        
+
         if (!$user) {
             return response()->json([
-                'error' => 'Unauthorized. Please log in again.',
+                'error' => 'Unauthorized. Invalid token.',
                 'logout' => true
             ], 401);
         }

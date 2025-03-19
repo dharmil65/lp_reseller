@@ -49,6 +49,6 @@ class MarketplaceController extends Controller
     
     public function logout(Request $request)
     {
-        return view('register');
+        return redirect()->route('register-client-form');
     }
 }
