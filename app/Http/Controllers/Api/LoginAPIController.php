@@ -45,14 +45,13 @@ class LoginAPIController extends Controller
             Auth::setUser($authUser);
         
             $token = $resellerUser->remember_token;
-        
             if (!$token) {
                 $token = Str::random(30);
                 DB::table('reseller_users')->where('id', $resellerUser->id)->update([
                     'remember_token' => $token
                 ]);
             }
-        
+
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',

@@ -328,6 +328,15 @@ $(document).ready(function () {
                 d.marketplaceType = 0;
                 d.page_per_size = 25;
                 d.page = 1;
+            },
+            error: function(xhr) {
+                if (xhr.status === 401) {
+                    let response = xhr.responseJSON;
+                    if (response && response.logout) {
+                        localStorage.removeItem("api_token");
+                        window.location.href = "/logout";
+                    }
+                }
             }
         },
         pageLength: 25,
@@ -465,6 +474,12 @@ $(document).ready(function () {
                 toastr.error("Something went wrong");
             }
         });
+    });
+
+    $(document).on('click', '#logout_advertiser', function (e) {
+        e.preventDefault();
+        localStorage.removeItem("api_token");
+        window.location.href = this.href;
     });
 
 });

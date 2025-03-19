@@ -47,19 +47,21 @@
                             <input type="hidden" name="reseller_id" id="reseller_id" value="{{ isset($reseller->id) ? $reseller->id : '' }}">
                             <input type="hidden" name="reseller_name" id="reseller_name" value="{{ isset($reseller->name) ? $reseller->name : '' }}">
 
-                            <div class="form-group form-icon name_class {{ $errors->has('name') ? 'error' : '' }}">
-                                <input type="text" name="name" placeholder="Full name*" id="name" required>
-                                @error('name')
-                                    <label class="error backend" for="name">{{ $message }}</label>
-                                @enderror
-                            </div>
+                            @if (isset($errors))
+                                <div class="form-group form-icon name_class {{ $errors->has('name') ? 'error' : '' }}">
+                                    <input type="text" name="name" placeholder="Full name*" id="name" required>
+                                    @error('name')
+                                        <label class="error backend" for="name">{{ $message }}</label>
+                                    @enderror
+                                </div>
 
-                            <div class="form-group form-icon email_class {{ $errors->has('email') ? 'error' : '' }}">
-                                <input type="email" name="email" id="email" placeholder="Email Address*" maxlength="100" value="{{ old('email') }}" required>
-                                @error('email')
-                                    <label class="error backend" for="email">{{ $message }}</label>
-                                @enderror
-                            </div>
+                                <div class="form-group form-icon email_class {{ $errors->has('email') ? 'error' : '' }}">
+                                    <input type="email" name="email" id="email" placeholder="Email Address*" maxlength="100" value="{{ old('email') }}" required>
+                                    @error('email')
+                                        <label class="error backend" for="email">{{ $message }}</label>
+                                    @enderror
+                                </div>
+                            @endif
 
                             <div class="form-group form-icon form-password login-password">
                                 <input type="password" name="password" id="password" placeholder="Password*" required>

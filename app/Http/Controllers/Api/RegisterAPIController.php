@@ -18,10 +18,11 @@ class RegisterAPIController extends Controller
     {
         $resellerData = [];
         $resellerId = 1;
+        $userId = $endClientId = null;
 
         try {
             $domain = rtrim($request->getScheme() . '://' . parse_url($request->fullUrl(), PHP_URL_HOST), '/');
-            $checkDomainInReseller = DB::table('resellers')
+            $checkDomainInReseller = DB::connection('lp_own_db')->table('resellers')
                 ->whereRaw("TRIM(TRAILING '/' FROM domain) = ?", [$domain])
                 ->first();
 
@@ -29,7 +30,7 @@ class RegisterAPIController extends Controller
                 $resellerId = $checkDomainInReseller->id;
             }
 
-            $checkIfReseller = DB::table('resellers')->where('email', $request->email)->exists();
+            $checkIfReseller = DB::connection('lp_own_db')->table('resellers')->where('email', $request->email)->exists();
             if ($checkIfReseller) {
                 return response()->json(['message' => 'Email already registered as a reseller. Please login.'], 409);
             }
@@ -49,24 +50,21 @@ class RegisterAPIController extends Controller
                 'updated_at' => now(),
             ];
 
-            $userId = DB::table('reseller_users')->insertGetId($resellerData);
+            $endClientId = DB::table('reseller_users')->insertGetId($resellerData);
 
             $resellerDataForLpOwnDb = $resellerData;
             $resellerDataForLpOwnDb['reseller_userid'] = $resellerDataForLpOwnDb['reseller_id'];
             unset($resellerDataForLpOwnDb['reseller_id']);
 
-            $checkIfExistsInLPReseller = DB::connection('lp_own_db')->table('reseller_users')->where('email', $request->email)->exists();
             $checkIfExistsInLPUsers = DB::connection('lp_own_db')->table('users')->where('email', $request->email)->exists();
 
-            if (!$checkIfExistsInLPReseller && !$checkIfExistsInLPUsers) {
+            if (!$checkIfExistsInLPUsers) {
                 DB::connection('lp_own_db')->table('reseller_users')->insert($resellerDataForLpOwnDb);
-                DB::connection('lp_own_db')->table('users')->insert([
-                    'name' => $resellerData['name'],
-                    'email' => $resellerData['email'],
+                $userId = DB::connection('lp_own_db')->table('users')->insertGetId([
+                    'name' => bcrypt($resellerData['name']),
+                    'email' => bcrypt($resellerData['email']),
                     'password' => bcrypt($resellerData['password']),
                     'register_from' => "reseller_client",
-                    'popup_status' => 1,
-                    'stage' => "total",
                     'billing_country_name' => ''
                 ]);
             }
@@ -89,7 +87,8 @@ class RegisterAPIController extends Controller
 
                 DB::table('wallets')->insert([
                     'user_id' => $userId,
-                    'reseller_id' => 1,
+                    'reseller_id' => $resellerId,
+                    'end_client_id' => $endClientId,
                     'transaction_id' => $unique_transaction_id,
                     'admin_credit_debit' => 'debit',
                     'added_desc' => 'Signup Bonus',

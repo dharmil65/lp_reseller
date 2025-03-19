@@ -21,7 +21,16 @@ class MarketplaceAPIController extends Controller
         $authorizationHeader = $request->header('Authorization');
         $token = str_replace('Bearer ', '', $authorizationHeader);
 
-        $userId = DB::table('reseller_users')->where('remember_token', $token)->value('id');
+        $user = DB::table('reseller_users')->where('remember_token', $token)->first();
+        
+        if (!$user) {
+            return response()->json([
+                'error' => 'Unauthorized. Please log in again.',
+                'logout' => true
+            ], 401);
+        }
+
+        $userId = $user->id;
 
         $cart_data = DB::table('carts')
             ->select('reseller_id', 'status', 'advertiser_id', 'website_id')

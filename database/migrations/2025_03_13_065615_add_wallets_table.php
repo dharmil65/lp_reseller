@@ -10,6 +10,7 @@ return new class extends Migration {
             $table->increments('id');
             $table->integer('user_id')->nullable();
             $table->integer('reseller_id')->nullable();
+            $table->integer('end_client_id')->nullable();
             $table->string('transaction_id')->unique()->nullable();
             $table->string('order_id')->unique()->nullable();
             $table->string('credit_or_debit')->nullable();
