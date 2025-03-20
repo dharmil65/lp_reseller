@@ -28,3 +28,5 @@ Route::get('login-client', [LoginController::class, 'showLoginForm'])->name('log
 Route::get('/client_marketplace', [MarketplaceController::class, 'marketplaceView'])->name('client_marketplace');
 
 Route::get('/logout', [MarketplaceController::class, 'logout'])->name('logout');
+
+Route::get('/cart', [MarketplaceController::class, 'cartDetailPageView'])->name('cart');

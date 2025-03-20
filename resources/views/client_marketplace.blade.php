@@ -517,16 +517,19 @@ $(document).ready(function () {
         if (!cartCount || parseInt(cartCount) === 0) {
             toastr.info('Your Cart is Empty');
         } else {
-            var token = localStorage.getItem('auth_token');
+            var token = localStorage.getItem('api_token');
             $.ajax({
                 type: "GET",
-                url: "/api/end-client-cart-data",
+                url: "/api/client-cart-data",
                 headers: { "Authorization": "Bearer " + token },
                 data: { end_client_id: endClientId },
                 dataType: 'json',
                 success: function (response) {
                     if (response.success) {
-                        window.location.href = "/reseller_module/end_client_cart";
+                        const walletBalance = encodeURIComponent(response.walletBalance);
+                        const cartTotal = encodeURIComponent(response.cartTotal);
+                        const userid = encodeURIComponent(response.userid);
+                        window.location.href = `{{ route('cart') }}?userid=${userid}&walletBalance=${walletBalance}&cartTotal=${cartTotal}`;
                     }
                 },
                 error: function (xhr) {

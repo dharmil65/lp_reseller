@@ -29,4 +29,4 @@ Route::get('/fetch-marketplace-data', [MarketplaceAPIController::class, 'fetchMa
 
 Route::post('/cart/store', [MarketplaceAPIController::class, 'cartStore'])->name('cart.store');
 
-Route::get('/end-client-cart-data', [MarketplaceAPIController::class, 'cartShowEndClient'])->name('api.end-client-cart-data');
+Route::get('/client-cart-data', [MarketplaceAPIController::class, 'cartShowEndClient'])->name('client-cart-data');
