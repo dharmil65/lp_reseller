@@ -457,7 +457,8 @@
                 isOrderButtonDisabled = true;
                 $('#place_order_btn_text').text('Processing....');
 
-                let endClientId = $('#user_id').val();
+                let urlParams = new URLSearchParams(window.location.search);
+                let endClientId = urlParams.get('end_client_id') || '0';
 
                 $.ajax({
                     type: 'GET',

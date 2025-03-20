@@ -532,6 +532,7 @@
         if (urlParams.has('walletBalance') && urlParams.has('cartTotal')) {
             localStorage.setItem('walletBalance', urlParams.get('walletBalance'));
             localStorage.setItem('cartTotal', urlParams.get('cartTotal'));
+            localStorage.setItem('userid', urlParams.get('userid'));
         }
 
         let walletBalance = localStorage.getItem('walletBalance') || '0';

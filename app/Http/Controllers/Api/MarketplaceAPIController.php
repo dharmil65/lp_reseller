@@ -447,6 +447,8 @@ class MarketplaceAPIController extends Controller
         $unique = [];
 
         $resellerUserId = $user_id;
+        // $getEmail = DB::table('reseller_users')->where('id', $user_id)->value('email');
+        // $getUserID = DB::connection('lp_own_db')->table('users')->where('email', $getEmail)->value('id');
         $balance = DB::connection('lp_own_db')->table('wallets')->where('end_client_id', $user_id)->where('status', 'complete')->orderBy('id', 'desc')->pluck('total')->first();
         $data = [
             'advertiser' => DB::table('reseller_users')->where('id', $resellerUserId)->value('name'),
@@ -609,7 +611,7 @@ class MarketplaceAPIController extends Controller
                     ]);
                 }
                 
-                $wallet = DB::connection('lp_reseller')->table('wallets')->insert($walletData);
+                $wallet = DB::connection('lp_own_db')->table('wallets')->insert($walletData);
             } else {
                 return response()->json(array('success' => false, 'message' => 'Order not executed due to low wallet balance.'));
             }
