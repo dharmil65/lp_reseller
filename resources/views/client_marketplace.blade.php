@@ -235,7 +235,7 @@
         <div class="side-logo">
             <a href="#"><img src="{{asset('assets/images/side-logo.png')}}" alt="side-logo" loading="lazy"></a>
             <div class="balance" id="addFundsBtn">
-                <h5> {{ isset($walletBalance) && !empty($walletBalance) ? "$".$walletBalance : '$0'}} </h5>
+                <h5 id="walletBalance"></h5>
                 <p> <span><img src="{{asset('assets/images/hedaer-plus.svg')}}" alt="hedaer-plus" loading="lazy"></span> Add Funds</p>
             </div>
         </div>
@@ -345,6 +345,12 @@ $(document).ready(function () {
                     $('#cartcount').text(res.cartsTotal);
                 } else {
                     $('.notification-number').hide();
+                }
+
+                if (res.hasOwnProperty('walletBalance') && !isNaN(res.walletBalance) && res.walletBalance > 0) {
+                    $('#walletBalance').text("$"+res.walletBalance);
+                } else {
+                    $('#walletBalance').text('$0');
                 }
 
                 return res.data || [];

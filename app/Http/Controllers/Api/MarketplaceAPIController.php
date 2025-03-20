@@ -52,11 +52,10 @@ class MarketplaceAPIController extends Controller
         $cartStatus = array_column($cartData, 'status', 'website_id');
 
         $walletBalance = DB::table('wallets')
-            ->where('user_id', $userId)
+            ->where('end_client_id', $userId)
             ->where('status', 'complete')
             ->orderBy('id', 'desc')
-            ->pluck('total')
-            ->first();
+            ->value('total');
 
         $marketplaceType = $request->input('marketplaceType');
         $pagePerSize = $request->input('page_per_size', 25);

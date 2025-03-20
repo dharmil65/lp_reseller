@@ -537,6 +537,20 @@
 
 <script>
     $(document).ready(function() {
+
+        const urlParams = new URLSearchParams(window.location.search);
+
+        if (urlParams.has('walletBalance') && urlParams.has('cartTotal')) {
+            localStorage.setItem('walletBalance', urlParams.get('walletBalance'));
+            localStorage.setItem('cartTotal', urlParams.get('cartTotal'));
+        }
+
+        let walletBalance = localStorage.getItem('walletBalance') || '0';
+        let cartTotal = localStorage.getItem('cartTotal') || '0';
+
+        $('#walletBalance').text(walletBalance > 0 ? "$" + walletBalance : "$0");
+        $('#cartcount').text(cartTotal > 0 ? cartTotal : '').toggleClass('d-none', cartTotal <= 0);
+
         $(".cart_list").click(function (e) {
             e.preventDefault();
 
