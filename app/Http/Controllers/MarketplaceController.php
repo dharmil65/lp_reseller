@@ -31,20 +31,7 @@ class MarketplaceController extends Controller
 {
     public function marketplaceView()
     {
-        $userId = DB::table('reseller_users')->where('email', session('email'))->value('id');
-        
-        $cart_data = DB::table('carts')->select('reseller_id', 'status', 'advertiser_id', 'website_id')->where('advertiser_id', $userId)->get()->toArray();
-
-        $cartsTotal = DB::table('carts')
-            ->where('advertiser_id', $userId)
-            ->where('status', 0)
-            ->count();
-
-        $cartStatus = array_column($cart_data, 'status', 'website_id');
-
-        $walletBalance = DB::table('wallets')->where('user_id', $userId)->where('status', 'complete')->orderBy('id', 'desc')->pluck('total')->first();
-
-        return view('client_marketplace', compact('cartStatus', 'cartsTotal', 'walletBalance'));
+        return view('client_marketplace');
     }
     
     public function logout(Request $request)

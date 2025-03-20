@@ -249,7 +249,7 @@
         <div class="menu-icon icon-menu">
             <ul class="menu-icon-detail">
                 <li><a  id="wishlist_btn"><img src="{{asset('assets/images/heart.png')}}" alt="heart"><span class="notification-number d-none" loading="lazy" id="wishlistcount"></span></a></li>
-                <li><a id="cart_btn_header"><img src="{{ asset('assets/images/buy.png') }}" alt="buy"><span class="notification-number {{ isset($cartsTotal) && $cartsTotal > 0 ? '' : 'd-none' }}" loading="lazy" id="cartcount">{{ isset($cartsTotal) && $cartsTotal > 0 ? $cartsTotal : '' }}</span></a></li>
+                <li><a id="cart_btn_header"><img src="{{ asset('assets/images/buy.png') }}" alt="buy"><span class="notification-number" loading="lazy" id="cartcount" style="display:none;"></span></a></li>
                 <li class="profile-wrapper dropdown">
                     <a class="dropdown-toggle" href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{{ isset(Auth::user()->userDetails) && !empty( Auth::user()->userDetails->image ) ? url('profile') .'/' . Auth::user()->userDetails->image : asset('assets/images/no-image.png') }}" alt="profile" loading="lazy"></a>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -303,9 +303,6 @@
         </section>
     </div>
 </div>
-<script>
-    var cartStatus = @json($cartStatus);
-</script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
@@ -314,6 +311,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
 $(document).ready(function () {
+    let token = localStorage.getItem("api_token");
+    if (!token) window.location.href = "{{ route('logout') }}";
+
     $('#marketplaceTable').DataTable({
         serverSide: true,
         ajax: {
@@ -321,7 +321,7 @@ $(document).ready(function () {
             type: "GET",
             dataType: "json",
             headers: {
-                "Authorization": "Bearer " + localStorage.getItem("api_token"),
+                "Authorization": "Bearer " + token,
             },
             data: function(d) {
                 d.search = $('#marketplace_search').val();
@@ -329,7 +329,27 @@ $(document).ready(function () {
                 d.page_per_size = 25;
                 d.page = 1;
             },
-            error: function(xhr) {
+            beforeSend: function () {
+                cartStatus = {};
+            },
+            dataSrc: function (res) {
+                if (!res.success) {
+                    window.location.href = "{{ route('logout') }}";
+                    return [];
+                }
+
+                cartStatus = res.cartStatus || {};
+
+                if (res.hasOwnProperty('cartsTotal') && !isNaN(res.cartsTotal) && res.cartsTotal > 0) {
+                    $('.notification-number').show();
+                    $('#cartcount').text(res.cartsTotal);
+                } else {
+                    $('.notification-number').hide();
+                }
+
+                return res.data || [];
+            },
+            error: function (xhr) {
                 if (xhr.status === 401) {
                     let response = xhr.responseJSON;
                     if (response && response.logout) {
@@ -395,7 +415,6 @@ $(document).ready(function () {
                 searchable: false,
                 render: function (data, type, row) {
                     let isInWishlist = cartStatus[row.website_id] !== undefined && cartStatus[row.website_id] == 1;
-
                     return `
                         <a href="#" class="btn button btn-primary cart_wishlist_cta wishlist-btn ${isInWishlist ? 'active' : ''}"
                             data-wishlist="${row.website_id}" data-action="add" id="wishlist_${row.website_id}" 
@@ -411,7 +430,6 @@ $(document).ready(function () {
                 searchable: false,
                 render: function (data, type, row) {
                     let isInCart = cartStatus[row.website_id] !== undefined && cartStatus[row.website_id] == 0;
-
                     return `
                         <a rel="nofollow" class="btn button btn-primary cart_btn ${isInCart ? 'active' : ''}"
                             id="cart_${row.website_id}" data-cart="${row.website_id}" 
@@ -437,7 +455,10 @@ $(document).ready(function () {
         $.ajax({
             type: "POST",
             url: "/api/cart/store",
-            contentType: "application/json",  
+            contentType: "application/json",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("api_token"),
+            },
             data: JSON.stringify({
                 website_id: website_id,
                 action: action,
@@ -462,7 +483,7 @@ $(document).ready(function () {
                 } else {
                     $('#blocksites_' + website_id).removeClass('disabled');
                 }                    
-
+                
                 $('#cartcount').text(response.cartTotal);
                 if (response.cartTotal == 0) {
                     $('#cartcount').addClass('d-none').text('');
@@ -471,7 +492,15 @@ $(document).ready(function () {
                 }
             },
             error: function (xhr) {
-                toastr.error("Something went wrong");
+                if (xhr.status === 401) {
+                    let response = xhr.responseJSON;
+                    if (response && response.logout) {
+                        localStorage.removeItem("api_token");
+                        window.location.href = "/logout";
+                    }
+                } else {
+                    toastr.error("Something went wrong");
+                }
             }
         });
     });
@@ -482,5 +511,31 @@ $(document).ready(function () {
         window.location.href = this.href;
     });
 
+    $('#cart_btn_header').on('click', function () {
+        var cartCount = $('#cartcount').text().trim();
+        var endClientId = $('#end_client_id').val();
+        if (!cartCount || parseInt(cartCount) === 0) {
+            toastr.info('Your Cart is Empty');
+        } else {
+            var token = localStorage.getItem('auth_token');
+            $.ajax({
+                type: "GET",
+                url: "/api/end-client-cart-data",
+                headers: { "Authorization": "Bearer " + token },
+                data: { end_client_id: endClientId },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        window.location.href = "/reseller_module/end_client_cart";
+                    }
+                },
+                error: function (xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = "{{ route('logout') }}";
+                    }
+                }
+            });
+        }
+    });
 });
 </script>

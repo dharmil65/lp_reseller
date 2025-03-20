@@ -28,3 +28,5 @@ Route::post('loginClient', [LoginAPIController::class, 'apiLogin']);
 Route::get('/fetch-marketplace-data', [MarketplaceAPIController::class, 'fetchMarketplaceData']);
 
 Route::post('/cart/store', [MarketplaceAPIController::class, 'cartStore'])->name('cart.store');
+
+Route::get('/end-client-cart-data', [MarketplaceAPIController::class, 'cartShowEndClient'])->name('api.end-client-cart-data');

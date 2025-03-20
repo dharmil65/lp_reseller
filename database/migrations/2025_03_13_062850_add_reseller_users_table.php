@@ -12,6 +12,8 @@ return new class extends Migration {
             $table->string('reseller_id')->nullable();
             $table->string('name')->nullable();
             $table->string('email')->unique()->nullable();
+            $table->string('api_key')->nullable();
+            $table->string('api_value')->nullable();
             $table->string('password')->nullable();
             $table->datetime('email_verified_at')->nullable();
             $table->rememberToken()->nullable();

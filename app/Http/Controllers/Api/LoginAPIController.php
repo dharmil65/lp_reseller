@@ -23,7 +23,7 @@ class LoginAPIController extends Controller
 
             if (!$resellerUser) {
                 $checkInUsers = DB::table('users')->where('email', $request->email)->where('is_reseller', 1)->first();
-                $checkInReseller = DB::table('resellers')->where('email', $request->email)->first();
+                $checkInReseller = DB::table('reseller_users')->where('email', $request->email)->first();
                 if ($checkInReseller) {
                     return response()->json([
                         'success' => true,
