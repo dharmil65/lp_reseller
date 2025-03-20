@@ -45,7 +45,6 @@ class RegisterAPIController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'email_verified_at' => Carbon::now()->toDateTimeString(),
-                // 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -53,7 +52,7 @@ class RegisterAPIController extends Controller
             $endClientId = DB::table('reseller_users')->insertGetId($resellerData);
 
             $resellerDataForLpOwnDb = $resellerData;
-            $resellerDataForLpOwnDb['reseller_userid'] = $resellerDataForLpOwnDb['reseller_id'];
+            $resellerDataForLpOwnDb['reseller_id'] = $resellerDataForLpOwnDb['reseller_id'];
             unset($resellerDataForLpOwnDb['reseller_id']);
 
             $checkIfExistsInLPUsers = DB::connection('lp_own_db')->table('users')->where('email', $request->email)->exists();
@@ -76,16 +75,16 @@ class RegisterAPIController extends Controller
 
         if (!empty($resellerData)) {
             try {
-                $last_id = DB::table('wallets')->max('id') ?? 0;
+                $last_id = DB::connection('lp_own_db')->table('wallets')->max('id') ?? 0;
                 $unique_transaction_id = 'REWARD25-' . date('Ymd') . ($last_id + 1);
                 $unique_order_id = $this->generateOrderId();
 
-                while (DB::table('wallets')->where('transaction_id', $unique_transaction_id)->exists()) {
+                while (DB::connection('lp_own_db')->table('wallets')->where('transaction_id', $unique_transaction_id)->exists()) {
                     $last_id++;
                     $unique_transaction_id = 'REWARD25-' . date('Ymd') . $last_id;
                 }
 
-                DB::table('wallets')->insert([
+                DB::connection('lp_own_db')->table('wallets')->insert([
                     'user_id' => $userId,
                     'reseller_id' => $resellerId,
                     'end_client_id' => $endClientId,
@@ -117,11 +116,11 @@ class RegisterAPIController extends Controller
     private function generateOrderId()
     {
         do {
-            $wallet = DB::table('wallets')->orderBy('id', 'desc')->first(['id']);
+            $wallet = DB::connection('lp_own_db')->table('wallets')->orderBy('id', 'desc')->first(['id']);
             $newId = $wallet ? $wallet->id : 0;
             $randomDigits = rand(10000, 99999);
             $unique_order_id = '#10' . str_pad($newId + 1, 8, "0", STR_PAD_LEFT) . $randomDigits;
-            $exists = DB::table('wallets')->where('order_id', $unique_order_id)->exists();
+            $exists = DB::connection('lp_own_db')->table('wallets')->where('order_id', $unique_order_id)->exists();
         } while ($exists);
         
         return $unique_order_id;

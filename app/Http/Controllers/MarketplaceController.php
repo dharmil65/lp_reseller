@@ -71,6 +71,8 @@ class MarketplaceController extends Controller
             ->get()
             ->toArray();
 
-        return view('client_cart', compact('walletBalance', 'cartTotal', 'userid', 'getCartData'));
+        $cartTotalAmount = number_format(array_sum(array_column($getCartData, 'total')));
+
+        return view('client_cart', compact('walletBalance', 'cartTotal', 'userid', 'getCartData', 'cartTotalAmount'));
     }
 }

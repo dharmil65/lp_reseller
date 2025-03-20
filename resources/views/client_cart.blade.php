@@ -263,7 +263,7 @@
                             <h4>cart</h4>
                         </div>
                         <div class="cart-total" id="go_to_checkout_detail">
-                            <p>Order Total: <span></span></p>
+                            <p>Order Total: <span>{{ "$".$cartTotalAmount ?? 0 }}</span></p>
                             <a href="" id="go_to_summary_btn" class="btn button go_to_summary_btn active">Go to Order Summary <img src="{{asset('assets/images/summary-right.svg')}}" alt="summary-right"></a>
                         </div>
                         <div class="backlink-add" id="success_msg">
@@ -525,18 +525,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var summaryBtn = document.getElementById("go_to_summary_btn");
-        var endClientInput = document.getElementById("end_client_id");
-
-        if (summaryBtn && endClientInput) {
-            var endClientId = endClientInput.value.trim();
-            summaryBtn.href = endClientId ? `/api/cart/order-summary?end_client_id=` + encodeURIComponent(endClientId) : `/api/cart/order-summary`;
-        }
-    });
-</script>
-
-<script>
     $(document).ready(function() {
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -561,6 +549,14 @@
                 window.history.replaceState({}, document.title, newUrl);
             }
         }, 1500);
+
+        var summaryBtn = $("#go_to_summary_btn");
+        var endClientInput = $("#user_id");
+
+        if (summaryBtn.length && endClientInput.length) {
+            var endClientId = endClientInput.val().trim();
+            summaryBtn.attr("href", endClientId ? `/api/cart/order-summary?end_client_id=` + encodeURIComponent(endClientId) : `/api/cart/order-summary`);
+        }
 
         $(".cart_list").click(function (e) {
             e.preventDefault();
@@ -772,7 +768,7 @@
                 });
                 
                 var formData = new FormData(form);
-                var end_client_id = $('#end_client_id').val();
+                var end_client_id = $('#user_id').val();
                 formData.append('_token', '{{ csrf_token() }}');
                 formData.append('type', 'provide_content');
                 formData.append('end_client_id', end_client_id);

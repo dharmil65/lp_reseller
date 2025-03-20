@@ -32,3 +32,11 @@ Route::post('/cart/store', [MarketplaceAPIController::class, 'cartStore'])->name
 Route::get('/client-cart-data', [MarketplaceAPIController::class, 'cartShowEndClient'])->name('client-cart-data');
 
 Route::post('/cart/fetch-cart-data', [MarketplaceAPIController::class, 'fetchEndClientCartData'])->name('cart.fetch-cart-data');
+
+Route::post('/cart/provide-cart-data-end-client', [MarketplaceAPIController::class, 'provideCartDataEndClient'])->name('cart.provide-cart-data-end-client');
+
+Route::post('/cart/add-quantity', [MarketplaceAPIController::class, 'addQuantityDataEndClient'])->name('cart.add-quantity');
+
+Route::get('/cart/order-summary', [MarketplaceAPIController::class, 'endClientOrderSummary'])->name('cart.order-summary');
+
+Route::get('/cart/place-order', [MarketplaceAPIController::class, 'endClientOrderPlace'])->name('cart.place-order');

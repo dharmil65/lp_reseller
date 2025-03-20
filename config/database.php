@@ -79,11 +79,11 @@ return [
 
         'lp_own_db' => [
             'driver' => 'mysql',
-            'host' => '192.168.5.233',
-            'port' => '10049',
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
             'database' => 'phpfmv_gpmarketplace',
-            'username' => 'root',
-            'password' => 'sheep',
+            'username' => env('DB_USERNAME', 'forge'),
+            'password' => env('DB_PASSWORD', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
