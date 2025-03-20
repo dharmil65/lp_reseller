@@ -208,4 +208,23 @@ class MarketplaceAPIController extends Controller
 
         return response()->json(['success' => true, 'walletBalance' => $walletBalance, 'cartTotal' => $cartTotal, 'userid' => $id]);
     }
+
+    public function fetchEndClientCartData(Request $request)
+    {
+        $id = $request->endClientId ?? null;
+        $cartDetails = DB::table('carts')->where('advertiser_id',  $id)->where('marketplace_type', $request->marketplace_type)->where('website_id', $request->website_id)->orderby('quantity_no', 'ASC')->get();
+        $websiteDetail = DB::connection('lp_own_db')->table('advertiser_marketplace')->where('website_id', $request->website_id);
+        if($request->marketplace_type == 0){
+            $websiteDetail->whereNotNull('category');
+        }else{
+            $websiteDetail->whereNotNull('forbiddencategories');
+        }
+        $websiteDetail = $websiteDetail->first();
+        $cartPriceCollection = $cartDetails->pluck('price');
+        $cartPrice = $cartPriceCollection->filter()->isNotEmpty() ? $cartPriceCollection : null;
+        $usersDetail = DB::connection('lp_own_db')->table('websites')->join('users', 'websites.publisher_id', 'users.id')->where('websites.id', $request->website_id)->select('users.id', 'users.deleted_at as userDeleted', 'users.vacation_mode', 'websites.deleted_at', 'users.is_active')->first();
+        $returnHTML = view('cart_details', compact('cartDetails', 'usersDetail', 'websiteDetail', 'cartPrice'))->render();
+        $guideline = $websiteDetail->guidelines;
+        return response()->json(array('success' => true, 'html' => $returnHTML, 'message' => 'cart details', 'guideline' => $guideline));
+    }
 }

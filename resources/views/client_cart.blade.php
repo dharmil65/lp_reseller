@@ -206,6 +206,7 @@
 </head>
 <body>
     <div class="main-wrapper">
+        <input type="hidden" name="user_id" id="user_id" value="">
         <header class="site-header marketplace-header">
             <div class="side-logo">
                 <a href="#"><img src="{{asset('assets/images/side-logo.png')}}" alt="side-logo" loading="lazy"></a>
@@ -547,9 +548,19 @@
 
         let walletBalance = localStorage.getItem('walletBalance') || '0';
         let cartTotal = localStorage.getItem('cartTotal') || '0';
+        let userid = localStorage.getItem('userid') || '0';
 
         $('#walletBalance').text(walletBalance > 0 ? "$" + walletBalance : "$0");
         $('#cartcount').text(cartTotal > 0 ? cartTotal : '').toggleClass('d-none', cartTotal <= 0);
+        $('#user_id').val(userid);
+
+        setTimeout(function () {
+            const userid = urlParams.get('userid');
+            if (userid) {
+                const newUrl = `${window.location.origin}${window.location.pathname}?userid=${userid}`;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+        }, 1500);
 
         $(".cart_list").click(function (e) {
             e.preventDefault();
@@ -591,7 +602,7 @@
             var marketplace_type = $(this).attr('data-type');
             var cart_url = $(this).attr('data-url');
             var website_id = $(this).attr('data-web-id');
-            var endClientId = $('#end_client_id').val();
+            var endClientId = $('#user_id').val();
 
             $('.cart_list').removeClass('active');
             $('.cart_list_data').removeClass('active');

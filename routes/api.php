@@ -30,3 +30,5 @@ Route::get('/fetch-marketplace-data', [MarketplaceAPIController::class, 'fetchMa
 Route::post('/cart/store', [MarketplaceAPIController::class, 'cartStore'])->name('cart.store');
 
 Route::get('/client-cart-data', [MarketplaceAPIController::class, 'cartShowEndClient'])->name('client-cart-data');
+
+Route::post('/cart/fetch-cart-data', [MarketplaceAPIController::class, 'fetchEndClientCartData'])->name('cart.fetch-cart-data');
