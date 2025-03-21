@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\RegisterAPIController;
 use App\Http\Controllers\Api\LoginAPIController;
 use App\Http\Controllers\Api\MarketplaceAPIController;
+use App\Http\Controllers\Api\ResellerPanelAPIController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,3 +43,5 @@ Route::get('/cart/order-summary', [MarketplaceAPIController::class, 'endClientOr
 Route::get('/cart/place-order', [MarketplaceAPIController::class, 'endClientOrderPlace'])->name('cart.place-order');
 
 Route::get('/fetch-client-orders', [MarketplaceAPIController::class, 'fetchClientOrders'])->name('client-orders');
+
+Route::get('/reseller-order-data', [ResellerPanelAPIController::class, 'getResellerOrders'])->name('reseller-order-data');

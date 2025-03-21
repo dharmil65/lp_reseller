@@ -137,7 +137,11 @@
                 </a>
             </li>
             <li><a href="{{ route('logout') }}"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
-            <li><a href="{{ route('logout') }}"><i class="fas fa-shopping-cart"></i> <span>Orders</span></a></li>
+            <li>
+                <a href="{{ route('reseller_orders', ['reseller_id' => $resellerId, 'reseller_name' => $resellerName]) }}">
+                    <i class="fas fa-shopping-cart"></i> <span>Orders</span>
+                </a>
+            </li>
             <li><a href="{{ route('logout') }}"><i class="fas fa-store"></i> <span>Price Structure Change</span></a></li>
             <li><a href="{{ route('logout') }}"><i class="fas fa-store"></i> <span>Users</span></a></li>
         </ul>

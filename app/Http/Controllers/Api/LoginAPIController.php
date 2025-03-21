@@ -23,7 +23,8 @@ class LoginAPIController extends Controller
    
             if (!$resellerUser) {
                 $checkInReseller = DB::connection('lp_own_db')->table('resellers')->where('email', $request->email)->first();
-                if ($checkInReseller) {
+
+                if ($checkInReseller && Hash::check($request->login_password, $checkInReseller->password)) {
                     return response()->json([
                         'success' => true, 
                         'message' => 'Reseller login successful!', 
@@ -70,7 +71,7 @@ class LoginAPIController extends Controller
 
         } catch (Exception $e) {
             \Log::error(['error while verifying user: ' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Something went wrong'], 500);
+            return response()->json(['success' => false, 'message' => 'Invalid Credentials'], 500);
         }
     }
 }

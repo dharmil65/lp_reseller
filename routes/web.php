@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MarketplaceController;
+use App\Http\Controllers\ResellerPanelController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,3 +35,5 @@ Route::get('/cart', [MarketplaceController::class, 'cartDetailPageView'])->name(
 Route::get('reseller-home', [LoginController::class, 'resellerHomepage'])->name('reseller-home');
 
 Route::get('client_orders', [MarketplaceController::class, 'clientOrdersView'])->name('client_orders');
+
+Route::get('reseller_orders', [ResellerPanelController::class, 'resellerOrdersView'])->name('reseller_orders');
