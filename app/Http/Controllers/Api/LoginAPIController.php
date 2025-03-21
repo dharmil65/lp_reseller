@@ -29,6 +29,9 @@ class LoginAPIController extends Controller
                         'message' => 'Reseller login successful!', 
                         'reseller_id' => $checkInReseller->id,
                         'reseller_name' => $checkInReseller->name,
+                        'user' => [
+                            'token' => null,
+                        ],
                         'redirect_url' => route('reseller-home', [
                             'reseller_id' => $checkInReseller->id,
                             'reseller_name' => urlencode($checkInReseller->name)

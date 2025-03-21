@@ -40,20 +40,26 @@ class LoginController extends Controller
             $resellerId = $request->query('reseller_id');
             $resellerName = $request->query('reseller_name');
 
-            $reseller = DB::connection('lp_own_db')->table('resellers')->where('name', $resellerName)->select('id', 'name', 'commission_value')->first();
-            
+            $reseller = DB::connection('lp_own_db')
+                ->table('resellers')
+                ->where('name', $resellerName)
+                ->select('id', 'name', 'commission_value')
+                ->first();
+
             if (!$reseller) {
-                \Log::error(['error while fetching reseller information: ' => $e->getMessage()]);
+                \Log::error('Error while fetching reseller information: Reseller not found');
                 return response()->json(['error' => 'Reseller not found!'], 500);
             }
 
             $totalResellerUsers = DB::table('reseller_users')->where('reseller_id', $resellerId)->count();
-            $totalResellerOrders = DB::connection('lp_own_db')->table('order_attributes')->where('reseller_id', $resellerId)->count();
+            $totalResellerOrders = DB::connection('lp_own_db')
+                ->table('order_attributes')
+                ->where('reseller_id', $resellerId)
+                ->count();
 
             return view('reseller_dashboard', compact('reseller', 'totalResellerUsers', 'totalResellerOrders', 'resellerId', 'resellerName'));
         } catch (Exception $e) {
-
-            \Log::error(['error while fetching reseller homepage' => $e]);
+            \Log::error(['error while fetching reseller homepage' => $e->getMessage()]);
             return redirect()->back();
         }
     }

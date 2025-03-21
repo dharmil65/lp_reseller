@@ -131,7 +131,11 @@
 
     <div class="sidebar" id="sidebar">
         <ul>
-            <li><a href="{{ route('logout') }}"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li>
+                <a href="{{ route('reseller-home', ['reseller_id' => $resellerId, 'reseller_name' => $resellerName]) }}">
+                    <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                </a>
+            </li>
             <li><a href="{{ route('logout') }}"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
             <li><a href="{{ route('logout') }}"><i class="fas fa-shopping-cart"></i> <span>Orders</span></a></li>
             <li><a href="{{ route('logout') }}"><i class="fas fa-store"></i> <span>Price Structure Change</span></a></li>
