@@ -426,6 +426,7 @@ class MarketplaceAPIController extends Controller
     public function endClientOrderPlace(Request $request)
     {
         $user_id = $request->end_client_id ?? null;
+        $reseller_id = 1;
         $cartQuery = DB::table('carts')
             ->where('advertiser_id', $user_id)
             ->whereNotNull('content_writter')
@@ -523,6 +524,8 @@ class MarketplaceAPIController extends Controller
                         'order_id' => $orderId ?? null,
                         'order_lable' => $orderLabel ?? null,
                         'reseller_order_lable' => $this->generateResellerOrderLable(),
+                        'reseller_id' => $reseller_id ?? null,
+                        'end_client_id' => $user_id ?? null,
                         'website_id' => $advertiserCartListing[$i]['website_id'],
                         'content_writter' => $advertiserCartListing[$i]['content_writter'],
                         'instruction' => $advertiserCartListing[$i]['instruction'],
@@ -559,6 +562,7 @@ class MarketplaceAPIController extends Controller
                         'updated_at' => now(),
                         'reseller_order' => 1,
                         'price' => $advertiserCartListing[$i]['wihthout_commission_guest_post_price'],
+                        'total' => $advertiserCartListing[$i]['total'],
                     ]);
                 } catch (Exception $e) {
                     \Log::info(['error while inserting data in lp_own_db.order_attributes', $e]);
