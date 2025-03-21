@@ -91,7 +91,15 @@
             order: [[0, 'desc']]
         });
 
-        
+        $('.tablinks').on('click', function() {
+            $('.tablinks').removeClass('active');
+            $(this).addClass('active');
+
+            let status = $(this).data('status') || 'all';
+
+            table.ajax.url('/api/reseller-order-data').load();
+            table.ajax.reload(null, false);
+        });
     });
 </script>
 @endpush

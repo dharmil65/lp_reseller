@@ -37,7 +37,31 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+                                <div class="tab task_tab_list " id="tab_list">
+                                    <div class="tab" id="tab_list" style="border: 0;">
+                                        <button class="order_new tablinks active" data-status="1" id="New_id">
+                                            New ({{ $statusCounts[1] ?? 0 }})
+                                        </button>
+                                        <button class="order_pending tablinks" data-status="2" id="Progress_id">
+                                            In Progress ({{ $statusCounts[2] ?? 0 }})
+                                        </button>
+                                        <button class="order_delayed tablinks" data-status="5" id="Late_id">
+                                            Delayed ({{ $statusCounts[5] ?? 0 }})
+                                        </button>
+                                        <button class="order_delivered tablinks" data-status="7" id="Delivered_id">
+                                            Delivered ({{ $statusCounts[7] ?? 0 }})
+                                        </button>
+                                        <button class="order_complete tablinks" data-status="6" id="Complete_id">
+                                            Completed ({{ $statusCounts[6] ?? 0 }})
+                                        </button>
+                                        <button class="order_reject tablinks" data-status="0" id="Rejected_id">
+                                            Rejected ({{ $statusCounts[0] ?? 0 }})
+                                        </button>
+                                        <button class="order_all tablinks" data-status="all" id="All_id">
+                                            All Orders ({{ array_sum($statusCounts->toArray()) }})
+                                        </button>
+                                    </div>
+                                </div>
                                 <div id="New" class="tabcontent" style="display:block">
                                 <div class="box-body" id="new_table_list">
                                     @include('reseller_order_table')

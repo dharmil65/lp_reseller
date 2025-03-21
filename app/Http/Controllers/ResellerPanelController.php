@@ -31,8 +31,9 @@ class ResellerPanelController extends Controller
     {
         $statusCounts = DB::connection('lp_own_db')
             ->table('order_attributes')
-            ->selectRaw('status, COUNT(*) as count')
+            ->where('reseller_id', $request->query('reseller_id'))
             ->whereNull('deleted_at')
+            ->selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
