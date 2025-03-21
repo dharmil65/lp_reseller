@@ -196,7 +196,6 @@
                     dataType: "json",
                     success: function (response) {
                         if (response.success) {
-                            localStorage.setItem('api_token', response.user.token);
                             window.location.href = response.redirect_url;
                         } else {
                             $('.errorMsgClass').css('display', 'block');

@@ -22,16 +22,17 @@ class LoginAPIController extends Controller
             $resellerUser = DB::table('reseller_users')->where('email', $request->email)->first();
 
             if (!$resellerUser) {
-                $checkInUsers = DB::table('users')->where('email', $request->email)->where('is_reseller', 1)->first();
-                $checkInReseller = DB::table('reseller_users')->where('email', $request->email)->first();
+                $checkInReseller = DB::connection('lp_own_db')->table('resellers')->where('email', $request->email)->first();
                 if ($checkInReseller) {
                     return response()->json([
-                        'success' => true,
-                        'message' => 'Reseller login successful',
+                        'success' => true, 
+                        'message' => 'Reseller login successful!', 
                         'reseller_id' => $checkInReseller->id,
                         'reseller_name' => $checkInReseller->name,
-                        'user_data' => $checkInUsers ?? null,
-                        'redirect_url' => route('client_marketplace')
+                        'redirect_url' => route('reseller-home', [
+                            'reseller_id' => $checkInReseller->id,
+                            'reseller_name' => urlencode($checkInReseller->name)
+                        ])
                     ]);
                 }
             }
