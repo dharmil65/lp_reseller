@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url('css/custom.css') }}" /> 
+    <link rel="stylesheet" href="{{ url('css/register_custom.css') }}" /> 
     <link rel="stylesheet" href="{{ url('css/responsive.css') }}" />
     <link rel="stylesheet" type="text/css" href="{{ url('css/reseller_custom.css') }}">
     @stack('styles')
@@ -161,7 +161,7 @@
     <div class="wrapper">
     </div>
 
-    <script src="{{ asset('js/app.js') }}"></script>
+    <script src="{{ asset('assets/js/app.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url('css/custom.css') }}" /> 
+    <link rel="stylesheet" href="{{ url('css/register_custom.css') }}" /> 
     <link rel="stylesheet" href="{{ url('css/responsive.css') }}" defer/>
     <link rel="stylesheet" type="text/css" href="{{ url('css/reseller_custom.css') }}">
     @stack('styles')
@@ -128,7 +128,7 @@
     <div class="wrapper">
     </div>
 
-    <script src="{{ asset('js/app.js') }}"></script>
+    <script src="{{ asset('assets/js/app.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
@@ -181,34 +181,35 @@
                     error.insertAfter(element);
                 },
                 submitHandler: function(form) {
-                    form.submit();
-                }
-            });
-
-            $("#login_user").submit(function (e) {
-                e.preventDefault();
-                let formData = $(this).serialize();
-                
-                $.ajax({
-                    url: $(this).attr('action'),
-                    type: "POST",
-                    data: formData,
-                    dataType: "json",
-                    success: function (response) {
-                        if (response.success) {
-                            window.location.href = response.redirect_url;
-                        } else {
+                    let formData = $(form).serialize();
+                    $.ajax({
+                        url: $(form).attr('action'),
+                        type: "POST",
+                        data: formData,
+                        dataType: "json",
+                        success: function (response) {
+                            if (response.success) {
+                                localStorage.setItem('api_token', response.user.token);
+                                window.location.href = response.redirect_url;
+                            } else {
+                                $('.errorMsgClass').css('display', 'block');
+                                $('.columnError').html(response.message);
+                                setTimeout(function() {
+                                    $('.errorMsgClass').fadeOut('slow');
+                                }, 2000);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            let errorMessage = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Something went wrong, please try again.';
                             $('.errorMsgClass').css('display', 'block');
-                            $('.columnError').html(response.message);
-
+                            $('.columnError').html(errorMessage);
                             setTimeout(function() {
-                                $('.errorMsgClass').fadeOut('slow', function() {
-                                    location.reload();
-                                });
-                            }, 2000);
+                                $('.errorMsgClass').fadeOut('slow');
+                            }, 3000);
+                            return false;
                         }
-                    }
-                });
+                    });
+                }
             });
 
             $('#toggleLogInPassword').click(function() {

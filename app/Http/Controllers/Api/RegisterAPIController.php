@@ -51,14 +51,14 @@ class RegisterAPIController extends Controller
 
             $endClientId = DB::table('reseller_users')->insertGetId($resellerData);
 
-            $resellerDataForLpOwnDb = $resellerData;
-            $resellerDataForLpOwnDb['reseller_id'] = $resellerDataForLpOwnDb['reseller_id'];
-            unset($resellerDataForLpOwnDb['reseller_id']);
+            // $resellerDataForLpOwnDb = $resellerData;
+            // $resellerDataForLpOwnDb['reseller_id'] = $resellerDataForLpOwnDb['reseller_id'];
+            // unset($resellerDataForLpOwnDb['reseller_id']);
 
             $checkIfExistsInLPUsers = DB::connection('lp_own_db')->table('users')->where('email', $request->email)->exists();
 
             if (!$checkIfExistsInLPUsers) {
-                DB::connection('lp_own_db')->table('reseller_users')->insert($resellerDataForLpOwnDb);
+                DB::connection('lp_own_db')->table('reseller_users')->insert($resellerData);
                 $userId = DB::connection('lp_own_db')->table('users')->insertGetId([
                     'name' => bcrypt($resellerData['name']),
                     'email' => bcrypt($resellerData['email']),
