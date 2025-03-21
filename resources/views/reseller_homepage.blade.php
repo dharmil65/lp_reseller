@@ -13,9 +13,9 @@
     <link href="{{ asset('vendors/iconic-fonts/font-awesome/css/all.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="{{asset('css/bootstrap.min.css')}}" />
-    <link rel="stylesheet" type="text/css" href="{{ url('css/reseller_custom.css') }}" />
-    <link rel="stylesheet" type="text/css" href="{{ url('css/custom.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url('css/admin_custom.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url('css/custom.css') }}?v={{ config('css_versions.custom_css_version') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url('css/admin_custom.css') }}?v={{ config('css_versions.admin_custom_css_version') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url('css/reseller_custom.css') }}?v={{ config('css_versions.reseller_custom_css_version') }}">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     @stack('styles')
 

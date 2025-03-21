@@ -769,7 +769,7 @@ button:focus {
     position: absolute;
     top: 16px;
     left: 10px;
-    background-image: url(/assets/images/form-user.svg);
+    background-image: url(/assets/latest_assets_new/images/form-user.svg);
     background-size: contain;
     background-repeat: no-repeat;
     width: 20px;
@@ -777,7 +777,7 @@ button:focus {
 }
 
 .form-wrapper .form-group.form-icon.email_class::before {
-    background-image: url(/assets/images/mail.svg);
+    background-image: url(/assets/latest_assets_new/images/mail.svg);
     content: "";
     position: absolute;
     top: 16px;
@@ -789,7 +789,7 @@ button:focus {
 }
 
 .form-wrapper .form-group.form-icon.email_val::before {
-    background-image: url(/assets/images/mail.svg);
+    background-image: url(/assets/latest_assets_new/images/mail.svg);
     content: "";
     position: absolute;
     top: 16px;
@@ -801,7 +801,7 @@ button:focus {
 }
 
 .form-wrapper .form-group.form-icon.login-password::before {
-    background-image: url(/assets/images/password.svg);
+    background-image: url(/assets/latest_assets_new/images/password.svg);
     content: "";
     position: absolute;
     top: 11px;
@@ -1006,10 +1006,12 @@ form .signup-link a:hover {
 
 .login-sign-wrapper .client-review-wrapper::before {
     z-index: 1;
+    background: #fff;
 }
 
 .background-animation {
     z-index: 0;
+    display: none;
 }
 
 .advertiser-publisher-info {

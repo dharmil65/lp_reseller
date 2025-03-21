@@ -3948,6 +3948,10 @@ tr.parent {
 .website-module-wrapper .website-table.filter-search #myTable_filter {
     top: -1127px;
 }
+/* 
+.website-module-wrapper .website-table.filter-search #myTable_filter {
+    top: -866px;
+} */
 
 /* .website-module-wrapper .website-table.filter-search .flter_error,
 .website-module-wrapper .website-table.filter-search .flter_error #myTable_filter {
@@ -11872,6 +11876,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     font-size: 16px;
     font-weight: 400;
     color: #275570 !important;
+    line-height: 38px;
 }
 
 .new-advertisers-table .no-data img,
@@ -12617,6 +12622,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .languageedit .select2 {
     width: 200px !important;
 }
+
 #spam_score_msg {
     color: red;
     font-size: 14px;
@@ -12805,7 +12811,7 @@ a.report-count {
     .website-module-wrapper .notexport .wordpress_login_link_create img {
         max-width: 18px;
     }
-
+    
     #myTable_wrapper .admin_website tr td .wordpress_login_link_create i {
         font-size: 14px;
     }
