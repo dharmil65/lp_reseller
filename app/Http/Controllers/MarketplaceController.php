@@ -75,4 +75,9 @@ class MarketplaceController extends Controller
 
         return view('client_cart', compact('walletBalance', 'cartTotal', 'userid', 'getCartData', 'cartTotalAmount'));
     }
+
+    public function clientOrdersView()
+    {
+        return view('client_orders');
+    }
 }

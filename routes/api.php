@@ -40,3 +40,5 @@ Route::post('/cart/add-quantity', [MarketplaceAPIController::class, 'addQuantity
 Route::get('/cart/order-summary', [MarketplaceAPIController::class, 'endClientOrderSummary'])->name('cart.order-summary');
 
 Route::get('/cart/place-order', [MarketplaceAPIController::class, 'endClientOrderPlace'])->name('cart.place-order');
+
+Route::get('/fetch-client-orders', [MarketplaceAPIController::class, 'fetchClientOrders'])->name('client-orders');

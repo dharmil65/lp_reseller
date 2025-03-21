@@ -686,4 +686,96 @@ class MarketplaceAPIController extends Controller
 
         return $unique_order_id;
     }
+
+    public function fetchClientOrders(Request $request)
+    {
+        $authorizationHeader = $request->header('Authorization');
+        if (!$authorizationHeader || !Str::startsWith($authorizationHeader, 'Bearer ')) {
+            return response()->json([
+                'error' => 'Unauthorized. Token is required.',
+                'logout' => true
+            ], 401);
+        }
+
+        $token = str_replace('Bearer ', '', $authorizationHeader);
+        $user = DB::table('reseller_users')->where('remember_token', $token)->first();
+
+        if (!$user) {
+            return response()->json([
+                'error' => 'Invalid token.',
+                'logout' => true
+            ], 401);
+        }
+
+        $query = DB::connection('lp_own_db')
+            ->table('order_attributes')
+            ->where('order_attributes.end_client_id', $user->id)
+            ->whereNull('order_attributes.deleted_at');
+
+        $status = $request->input('status', 1);
+
+        if ($status !== 'all') {
+            $query->where('order_attributes.status', $status);
+        }
+
+        $getOrderData = $query->orderBy('order_attributes.id', 'desc')->get();
+
+        foreach ($getOrderData as $order) {
+            $order->host_url = DB::connection('lp_own_db')
+                ->table('websites')
+                ->where('id', $order->website_id)
+                ->value('host_url') ?? '-';
+
+            $checkLable = DB::connection('lp_own_db')
+                ->table('order_attributes')
+                ->where('reseller_order_lable', $order->reseller_order_lable)
+                ->value('order_lable') ?? '-';
+
+            $order->live_link = $order->url;
+            $demo_lable = ltrim($checkLable, '#');
+            $order->action_column = '
+                <div class="multi-actions" id="multiAction' . $demo_lable . '" data-oaid="' . $demo_lable . '">
+                    <a class="checked acationDeisb" data-title="Accept">
+                        <img src="' . asset("assets/images/checked-icon.png") . '" alt="checked-icon">
+                    </a>
+                    <a class="save acationDeisb" data-oaid="' . $demo_lable . '" data-title="Comment">
+                        <img src="' . asset("assets/images/save-icon.png") . '" alt="save-icon">
+                    </a>
+                    <input type="hidden" name="ord_id_val" id="ord_id_val" value="' . $demo_lable . '">
+                    <div class="close-action-popup" id="' . $demo_lable . '" style="display: none;">
+                        <a href="javascript:void(0);" class="close-icon"></a>
+                        <div class="close-action-popup-inner">
+                            <span>Add Comment</span> <span class="comment_id"> #' . $order->order_lable . '</span>
+                            <form action="post" id="form' . $demo_lable . '">
+                                <div class="reason-input">
+                                    <textarea name="message" data-oaid="' . $demo_lable . '" class="modificationMessage" id="modificationMessage' . $demo_lable . '" cols="30" rows="10" placeholder="Enter your comment"></textarea>
+                                </div>
+                                <div class="reason-submit">
+                                    <div class="choose_file file " id="choose_file_' . $demo_lable . '" style="display: inline-block;" bottom-title="Choose file" title="">
+                                        <a> <img src="' . asset("assets/images/send-icon.png") . '" alt="send-icon"></a>
+                                        <input name="attachment" class="download" id="attachment_' . $demo_lable . '" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx">
+                                    </div>
+                                    <span class="docuemnt_name" id="docuemnt_name_' . $demo_lable . '"></span>
+                                    <input type="button" value="" class="submitModification">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>';
+        }
+
+        $statusCounts = DB::connection('lp_own_db')
+            ->table('order_attributes')
+            ->where('order_attributes.end_client_id', $user->id)
+            ->whereNull('order_attributes.deleted_at')
+            ->selectRaw('order_attributes.status, COUNT(*) as count')
+            ->groupBy('order_attributes.status')
+            ->pluck('count', 'order_attributes.status');
+
+        return response()->json([
+            'orders' => $getOrderData,
+            'statusCounts' => $statusCounts,
+            'totalOrders' => array_sum($statusCounts->toArray()),
+        ]);
+    }
 }

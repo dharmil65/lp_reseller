@@ -32,3 +32,5 @@ Route::get('/logout', [MarketplaceController::class, 'logout'])->name('logout');
 Route::get('/cart', [MarketplaceController::class, 'cartDetailPageView'])->name('cart');
 
 Route::get('reseller-home', [LoginController::class, 'resellerHomepage'])->name('reseller-home');
+
+Route::get('client_orders', [MarketplaceController::class, 'clientOrdersView'])->name('client_orders');

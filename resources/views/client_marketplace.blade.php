@@ -243,7 +243,7 @@
             <ul>
                 <li><a href="#" class="">Dashboard</a></li>
                 <li><a href="{{ route('client_marketplace') }}" class="active">Marketplace</a></li>
-                <li><a href="" class="">My Orders</a></li>
+                <li><a href="{{ route('client_orders') }}" class="">My Orders</a></li>
             </ul>
         </nav>
         <div class="menu-icon icon-menu">
@@ -523,11 +523,13 @@ $(document).ready(function () {
         if (!cartCount || parseInt(cartCount) === 0) {
             toastr.info('Your Cart is Empty');
         } else {
-            var token = localStorage.getItem('api_token');
+            var token = localStorage.getItem("api_token");
             $.ajax({
                 type: "GET",
                 url: "/api/client-cart-data",
-                headers: { "Authorization": "Bearer " + token },
+                headers: {
+                    "Authorization": "Bearer " + token,
+                },
                 data: { end_client_id: endClientId },
                 dataType: 'json',
                 success: function (response) {
