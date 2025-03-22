@@ -708,6 +708,7 @@ class MarketplaceAPIController extends Controller
         }
 
         $fetchUserID = DB::connection('lp_own_db')->table('users')->where('email', $user->email)->value('id');
+        $fetchUserName = DB::connection('lp_own_db')->table('users')->where('email', $user->email)->value('name');
 
         $query = DB::connection('lp_own_db')->table('order_attributes')
             ->join('websites', 'websites.id', 'order_attributes.website_id')
@@ -715,8 +716,9 @@ class MarketplaceAPIController extends Controller
             ->whereNull('order_attributes.deleted_at')
             ->select(
                 'order_attributes.created_at', 'order_attributes.updated_at as start_date', 'order_attributes.total as price', 'order_attributes.with_comission_price', 'order_attributes.due_date', 'order_attributes.due_time', 'order_attributes.status', 'order_attributes.id as order_attr_id', 'order_attributes.content_modification', 'order_attributes.url', 'order_attributes.order_lable', 'order_attributes.original_expert_price', 'order_attributes.expert_price', 'order_attributes.discount_amount', 'order_attributes.total', 'order_attributes.content_writter', 'order_attributes.reject_type', 'order_attributes.reject_action_status', 'order_attributes.reject_reason', 'order_attributes.is_continue', 'order_attributes.tat as order_tat', 'order_attributes.req_price', 'order_attributes.order_type_category', 'order_attributes.remaining_time', 'order_attributes.is_lls_check','order_attributes.lls_status', 'order_attributes.affiliate_finalprice', 'websites.id as websiteID', 'websites.publisher_id', 'websites.website_url', 'websites.host_url', 'websites.tat', 'order_attributes.commission_price','order_attributes.value_addition', 'order_attributes.Preferred_language', 'order_attributes.reseller_order_lable',
-                DB::raw($fetchUserID . ' as fetchUserID'),
-                DB::raw('(select count(*) from `socket_order_message` where  ( `to_id` = '.$user->id.') and `status` = 1 AND seen = 0 and order_id = `order_attributes`.`id`)  as new_msg')
+                DB::raw("'$fetchUserID' as fetchUserID"),
+                DB::raw("'$fetchUserName' as fetchUserName"),
+                DB::raw('(select count(*) from `socket_order_message` where  ( `to_id` = '.$user->id.') and `status` = 1 AND seen = 0 and order_id = `order_attributes`.`id` and is_reseller_msg = 1)  as new_msg')
             );
 
         $status = $request->input('status', 1);
@@ -783,6 +785,8 @@ class MarketplaceAPIController extends Controller
             'orders' => $getOrderData,
             'statusCounts' => $statusCounts,
             'totalOrders' => array_sum($statusCounts->toArray()),
+            'fetchUserID' => $fetchUserID,
+            'fetchUserName' => $fetchUserName
         ]);
     }
 
@@ -841,24 +845,26 @@ class MarketplaceAPIController extends Controller
 
         $getChatMessage = '';
 
-        DB::connection('lp_own_db')->table('socket_order_message')->where('to_id', $request->user_id)->where('order_id', $request->order_attribute_id)->where('status', 1)->update(array('seen' => 1));
+        DB::connection('lp_own_db')->table('socket_order_message')->where('to_id', $request->user_id)->where('order_id', $request->order_attribute_id)->where('status', 1)->where('is_reseller_msg', 1)->update(array('seen' => 1));
         
         $chatMessage = DB::connection('lp_own_db')->table('socket_order_message')
-            ->select('socket_order_message.*', 'socket_order_message.id AS message_created_at')
-            ->join('order_attributes', 'order_attributes.id', '=', 'socket_order_message.order_id')
+            ->where('socket_order_message.is_reseller_msg', 1)
             ->where('socket_order_message.content_order_msg_or_not', null)
             ->where('socket_order_message.order_id', $request->order_attribute_id)
             ->where('to_id', $request->user_id)
             ->where('admin_seen', 1)
             ->where('socket_order_message.status',1)
+            ->select('socket_order_message.*', 'socket_order_message.id AS message_created_at')
+            ->join('order_attributes', 'order_attributes.id', '=', 'socket_order_message.order_id')
             ->orderBy('socket_order_message.created_at', 'ASC')
             ->union(
                 DB::table('socket_order_message')
-                    ->select('socket_order_message.*', 'socket_order_message.id AS message_created_at')
-                    ->join('order_attributes', 'order_attributes.id', '=', 'socket_order_message.order_id')
+                    ->where('socket_order_message.is_reseller_msg', 1)
                     ->where('socket_order_message.content_order_msg_or_not', null)
                     ->where('socket_order_message.order_id', $request->order_attribute_id)
                     ->where('from_id', $request->user_id)
+                    ->select('socket_order_message.*', 'socket_order_message.id AS message_created_at')
+                    ->join('order_attributes', 'order_attributes.id', '=', 'socket_order_message.order_id')
                     ->orderBy('socket_order_message.created_at', 'ASC')
             )->orderBy('message_created_at', 'ASC')
             ->get();
@@ -925,8 +931,23 @@ class MarketplaceAPIController extends Controller
             ], 401);
         }
 
-        $newUnreadMsgCount = DB::connection('lp_own_db')->select("select count(socket_order_message.id) AS new FROM `socket_order_message`  JOIN order_attributes ON order_attributes.id=socket_order_message.order_id WHERE `socket_order_message`.`content_order_msg_or_not` is null AND `socket_order_message`.`seen` = 0  AND `order_attributes`.`status` != 0 AND `order_attributes`.`status` != 6 AND socket_order_message.admin_seen = 1 AND socket_order_message.status = 1 AND socket_order_message.to_id=".$user->id);
+        $newUnreadMsgCount = DB::connection('lp_own_db')->select("select count(socket_order_message.id) AS new FROM `socket_order_message`  JOIN order_attributes ON order_attributes.id=socket_order_message.order_id WHERE `socket_order_message`.`is_reseller_msg` = 1 and `socket_order_message`.`content_order_msg_or_not` is null AND `socket_order_message`.`seen` = 0  AND `order_attributes`.`status` != 0 AND `order_attributes`.`status` != 6 AND socket_order_message.admin_seen = 1 AND socket_order_message.status = 1 AND socket_order_message.to_id=".$user->id);
 
         return response()->json(array('success' => true, 'count' => $newUnreadMsgCount[0]->new));
+    }
+
+    public function sendMessage(Request $request)
+    {
+        $chatId = DB::connection('lp_own_db')->table('socket_order_message')->insertGetId([
+            'body' => $request->param['message'],
+            'from_id' => $request->param['from_id'],
+            'to_id' => $request->param['to_id'],
+            'order_id' => $request->param['order_id'],
+            'is_reseller_msg' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        
+        return response()->json(['success' => true, 'message' => 'Message sent successfully!', 'id' => $chatId]);
     }
 }

@@ -16,6 +16,8 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 	</head>
 	<body>
+		<input type="hidden" name="main_user_id" id="main_user_id" value="">
+		<input type="hidden" name="main_user_name" id="main_user_name" value="">
 		<div class="main-wrapper">
 		<header class="site-header marketplace-header">
 			<div class="side-logo">
@@ -187,6 +189,8 @@
 		<script>
 			$(document).ready(function () {
                 var token = localStorage.getItem("api_token");
+				var msgBox=$('#chat_body');
+    			var wsUri = "wss://socket.elsnerdev.com/";
 
 				fetchOrders(1);
 
@@ -199,6 +203,8 @@
                             "Authorization": "Bearer " + token,
                         },
 						success: function (response) {
+							$('#main_user_id').val(response.fetchUserID);
+							$('#main_user_name').val(response.fetchUserName);
 							let rows = '';
 
 							if (response.orders.length > 0) {
@@ -389,6 +395,199 @@
 							}
 						}
 					});
+				}
+
+				$('#send-message').on('click', function() {
+					sendMessage();
+				});
+
+				$("#message").on("keydown", function(event) {
+					if (event.which == 13) {
+						sendMessage();
+					}
+				});
+
+				var debounceTimeout;
+				function sendMessage() {
+					
+					disableSending();
+					$('#msg-error-chat').css('display', 'none');
+					var message = $('#message').val();
+
+					if (message.trim().length > 0) {
+						$('#send-message').prop('disabled', true);
+						$('#message').css('pointer-events', 'none');
+						
+						message = message.replace(/^\s+|\s+$/g, '');
+						var to_id = $('#to_id').val();
+						var order_id = $('#order_id').val();
+						var user_id = $('#main_user_id').val();
+						var parameters = {
+							'to_id': to_id,
+							'order_id': order_id,
+							'message': message,
+							'from_id': user_id,
+							'type':'usermsg'
+						};
+
+						$.ajax({
+							type: 'POST',
+							url: "/api/send-message",
+							headers: {
+								"Authorization": "Bearer " + token,
+							},
+							data: {
+								'param': parameters,
+								"_token": "{{ csrf_token() }}"
+							},
+							dataType: 'json',
+							success: function(data) {
+								clearTimeout(debounceTimeout);
+								$('#message').val('');
+
+								debounceTimeout = setTimeout(function() {
+									window.setTimeout(function(){
+										$('#message').blur();
+									}, 100);
+									window.setTimeout(function(){
+										$('.chat_popup .modal-body').animate({scrollTop: $('.chat_popup .modal-body').prop("scrollHeight")}, 0);
+										$('#send-message').prop('disabled', false);
+										$('#message').css('pointer-events', 'auto');
+									}, 800);
+									window.setTimeout(function() {
+										$('#message').focus();
+									}, 1000);
+								}, 300);
+								
+								enableSending();
+
+								var currentTime = new Date().toLocaleString([], {hour: '2-digit', minute: '2-digit'});
+								var currentDate = new Date().toLocaleDateString('en-GB');
+
+								var msgHtml = '';
+								var checkDate = $('#chat_body h5').html();
+								if (checkDate == undefined) {
+									msgHtml += '<h5 style="margin-bottom:15px">' + currentDate + '</h5>';
+								}
+								msgHtml += '<div class="right-details"><p>' + message + '</p><br><h6>Advertiser, ' + currentTime + '</h6></div>';
+								msgBox.append(msgHtml);
+								msgBox[0].scrollTop = msgBox[0].scrollHeight;
+							}
+						});
+
+						var msg = {
+							message: message,
+							name: $('#main_user_name').val() + ", " + new Date().toLocaleString([], {hour: '2-digit', minute: '2-digit'}),
+							color: '<?php echo @$colors[$color_pick]; ?>',
+							type: 'usermsg',
+							from_id: $('#main_user_id').val(),
+							order_id:order_id,
+							to_id:to_id,
+							user_role: "Advertiser",
+							user_name: $('#main_user_name').val(),
+							time:new Date().toLocaleString([], {hour: '2-digit', minute: '2-digit'}),
+							content_msg_or_not: null
+						};
+
+						if (mySocket.readyState === WebSocket.OPEN) {
+							mySocket.send(JSON.stringify(msg));
+						}
+
+					} else {
+						$('#message').val('');
+					}
+				}
+
+				function disableSending() {
+					$('#send-message').prop('disabled', true);
+					$("#message").prop('disabled', true);
+					clearTimeout(debounceTimeout);
+					debounceTimeout = setTimeout(enableSending, 500);
+				}
+
+				function enableSending() {
+					$('#send-message').prop('disabled', false);
+					$("#message").prop('disabled', false);
+				}
+
+				var mySocket;
+				const socketMessageListener = (ev) => {
+					getUnreadNewMsgCount();
+					var id = $('#main_user_id').val();
+					var order_id = $('#order_id').val();
+					var response = JSON.parse(ev.data);
+
+					if (containsUrl(response.message)) {
+						response.message = makeUrlsClickable(response.message);
+					} else {
+						response.message = response.message;
+					}
+
+					console.log("response order_id: ", response.order_id);
+					console.log("order_id: ", order_id);
+					console.log("response type: ", response.type);
+					console.log("response from_id: ", response.from_id);
+					console.log("response to_id: ", response.to_id);
+					console.log("response user_role: ", response.user_role);
+					console.log("response message: ", response.message);
+
+					if (response.order_id == order_id) {
+						var currentDate = new Date().toLocaleDateString('en-GB');
+						var checkDate = $('#chat_body h5').html();
+
+						if (response.type == 'usermsg' && response.from_id == id && response.user_role == 'Advertiser') {
+							if(checkDate == undefined){
+								msgBox.append('<h5 style="margin-bottom:15px">' + currentDate + '</h5>');
+							}
+							msgBox.append('<div class="right-details"><p>' + response.message + '</p><br><h6>' + response.user_role + ', ' + response.time + '</h6></div>');
+						} else if (response.type == 'status' && response.to_id == id) {
+							if (checkDate == undefined) {
+								msgBox.append('<h5 style="margin-bottom:15px">' + currentDate + '</h5>');
+							}
+							msgBox.append('<div class="left-details"><p>' + response.message + '</p><br><h6>' + response.name + '</h6></div>');
+						}
+						msgBox[0].scrollTop = msgBox[0].scrollHeight;
+					}
+
+					$('.chat_popup .modal-body').animate({scrollTop: $('.chat_popup .modal-body').prop("scrollHeight")}, 0);
+				};
+
+				function containsUrl(text) {
+					var urlRegex = /(?:https?:\/\/)?(?:www\.)?[^\s]+\.[^\s]{2,}(?:\.[^\s]{2,})?(?:\/[^\s]*)?\b/gi;
+					return urlRegex.test(text);
+				}
+
+				function makeUrlsClickable(text) {
+					var urlRegex = /(?:https?:\/\/)?(?:www\.)?[^\s]+\.[^\s]{2,}(?:\.[^\s]{2,})?(?:\/[^\s]*)?\b/gi;
+					var newText = text.replace(urlRegex, function(url) {
+						if (!/^https?:\/\//i.test(url)) {
+							newUrl = 'https://' + url;
+						} else {
+							newUrl = url;
+						}
+						return '<a href="' + newUrl + '" target="_blank">' + url + '</a>';
+					});
+					return newText;
+				}
+
+				const socketOpenListener = (ev) => {
+					// var msg = {
+					//     message: "<?php echo $_SERVER['REMOTE_ADDR'] . ' connected.'; ?>",
+					//     type: 'system'
+					// };
+					mySocket.send(JSON.stringify(msg));
+				};
+
+				const socketCloseListener = (event) => {
+					mySocket = new WebSocket(wsUri);
+					mySocket.addEventListener('message', socketMessageListener);
+					mySocket.addEventListener('close', socketCloseListener);
+				};
+
+				try {
+					socketCloseListener();
+				} catch (e) {
+					console.log(e);
 				}
 			});
 		</script>

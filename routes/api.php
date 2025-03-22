@@ -51,3 +51,5 @@ Route::POST('/client-approval-to-complete', [MarketplaceAPIController::class, 'c
 Route::POST('/get-client-chat-message', [MarketplaceAPIController::class, 'getClientChatMessage'])->name('get-client-chat-message');
 
 Route::get('/client-unread-msg-counts', [MarketplaceAPIController::class, 'clientUnreadMsgCounts'])->name('client-unread-msg-counts');
+
+Route::POST('/send-message', [MarketplaceAPIController::class, 'sendMessage'])->name('send-message');
