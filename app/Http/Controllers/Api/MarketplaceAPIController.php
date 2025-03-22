@@ -939,10 +939,10 @@ class MarketplaceAPIController extends Controller
     public function sendMessage(Request $request)
     {
         $chatId = DB::connection('lp_own_db')->table('socket_order_message')->insertGetId([
-            'body' => $request->param['message'],
-            'from_id' => $request->param['from_id'],
-            'to_id' => $request->param['to_id'],
-            'order_id' => $request->param['order_id'],
+            'body' => $request->message,
+            'from_id' => $request->from_id,
+            'to_id' => $request->to_id,
+            'order_id' => $request->order_id,
             'is_reseller_msg' => 1,
             'created_at' => now(),
             'updated_at' => now(),

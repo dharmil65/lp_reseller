@@ -421,14 +421,8 @@
 						message = message.replace(/^\s+|\s+$/g, '');
 						var to_id = $('#to_id').val();
 						var order_id = $('#order_id').val();
-						var user_id = $('#main_user_id').val();
-						var parameters = {
-							'to_id': to_id,
-							'order_id': order_id,
-							'message': message,
-							'from_id': user_id,
-							'type':'usermsg'
-						};
+						var from_id = $('#main_user_id').val();
+						var type = "type";
 
 						$.ajax({
 							type: 'POST',
@@ -437,7 +431,11 @@
 								"Authorization": "Bearer " + token,
 							},
 							data: {
-								'param': parameters,
+								'message': message,
+								'to_id': to_id,
+								'from_id': from_id,
+								'order_id': order_id,
+								'type': type,
 								"_token": "{{ csrf_token() }}"
 							},
 							dataType: 'json',
