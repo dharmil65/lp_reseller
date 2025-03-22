@@ -135,7 +135,7 @@
 									<th>Type</th>
 									<th class="approval-only">Live Link</th>
 									<th class="approval-only">Action</th>
-									<th>Chat</th>
+									<th class="comments">Chat</th>
 								</tr>
 							</thead>
 							<tbody></tbody>
@@ -236,8 +236,14 @@
 
 									rows += `
 										<td>
-											<a href="javascript:void(0);" class="chat-icon" data-userid="${order.fetchUserID}" data-orderlabel="${order.order_lable}" data-publisher="${order.publisher_id}" data-oaid="${order.order_attr_id}" data-status="1">
+											<a href="javascript:void(0);" class="chat-icon" 
+												data-userid="${order.fetchUserID}" 
+												data-orderlabel="${order.order_lable}" 
+												data-publisher="${order.publisher_id}" 
+												data-oaid="${order.order_attr_id}" 
+												data-status="1">
 												<img src="{{ asset('assets/images/comment-icon.png') }}" alt="chat">
+												${order.new_msg > 0 ? '<span class="has-comments"></span>' : ''}
 											</a>
 										</td>
 									</tr>`;
@@ -369,7 +375,7 @@
 								backdrop: true,
 								keyboard: true
 							});
-							$('.chat-icon[data-id="'+order_attribute_id +'"]').find('span').removeClass("has-comments");
+							$('.chat-icon[data-oaid="'+order_attribute_id +'"]').find('span').removeClass("has-comments");
 							$('.chat_popup .modal-body').animate({scrollTop: $('.chat_popup .modal-body').prop("scrollHeight")}, 0);
 						}
 					});

@@ -5368,15 +5368,15 @@ span.need-approval {
     display: inline-block;
 }
 
-.order-data .comments, .order-data .actions {
+.order-data .actions {
     text-align: center;
 }
 
-.order-data .comments .comment-inner {
+.order-data .comment-inner {
     position: relative;
 }
 
-.order-data .comments .has-comments {
+.order-data .has-comments {
     position: absolute;
     height: 12px;
     width: 12px;
@@ -5384,7 +5384,7 @@ span.need-approval {
     border: 2px solid #fff;
     border-radius: 50%;
     background: #60CB8B;
-    right: 0;
+    right: 458px;
 }
 
 .order-data a {
