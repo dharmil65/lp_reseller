@@ -189,8 +189,13 @@
 		<script>
 			$(document).ready(function () {
                 var token = localStorage.getItem("api_token");
-				var msgBox=$('#chat_body');
+				var msgBox = $('#chat_body');
     			var wsUri = "wss://socket.elsnerdev.com/";
+
+				getUnreadNewMsgCount();
+				setInterval(function () {
+					getUnreadNewMsgCount();
+				}, 10000);
 
 				fetchOrders(1);
 
@@ -569,11 +574,10 @@
 				}
 
 				const socketOpenListener = (ev) => {
-					// var msg = {
-					//     message: "<?php echo $_SERVER['REMOTE_ADDR'] . ' connected.'; ?>",
-					//     type: 'system'
-					// };
-					mySocket.send(JSON.stringify(msg));
+					if (mySocket.readyState === WebSocket.OPEN) {
+						let msg = { message: "Client connected.", type: 'system' };
+						mySocket.send(JSON.stringify(msg));
+					}
 				};
 
 				const socketCloseListener = (event) => {
@@ -583,9 +587,11 @@
 				};
 
 				try {
-					socketCloseListener();
+					mySocket = new WebSocket(wsUri);
+					mySocket.addEventListener('message', socketMessageListener);
+					mySocket.addEventListener('close', socketCloseListener);
 				} catch (e) {
-					console.log(e);
+					console.log("WebSocket error:", e);
 				}
 			});
 		</script>

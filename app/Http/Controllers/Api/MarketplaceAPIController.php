@@ -448,8 +448,6 @@ class MarketplaceAPIController extends Controller
         $unique = [];
 
         $resellerUserId = $user_id;
-        // $getEmail = DB::table('reseller_users')->where('id', $user_id)->value('email');
-        // $getUserID = DB::connection('lp_own_db')->table('users')->where('email', $getEmail)->value('id');
         $balance = DB::connection('lp_own_db')->table('wallets')->where('end_client_id', $user_id)->where('status', 'complete')->orderBy('id', 'desc')->pluck('total')->first();
         $data = [
             'advertiser' => DB::table('reseller_users')->where('id', $resellerUserId)->value('name'),
@@ -470,12 +468,14 @@ class MarketplaceAPIController extends Controller
         $lowPrizeMail = [];
         $orderAttrMail = [];
 
-        $ordercount =  DB::connection('lp_own_db')->table('orders')->where('advertiser_id', $user_id)->select('orders.orderno_count')->orderBy('orders.orderno_count', 'desc')->first();
+        $getEmail = DB::table('reseller_users')->where('id', $user_id)->value('email');
+        $getUserID = DB::connection('lp_own_db')->table('users')->where('email', $getEmail)->value('id');
+        $ordercount =  DB::connection('lp_own_db')->table('orders')->where('advertiser_id', $getUserID)->select('orders.orderno_count')->orderBy('orders.orderno_count', 'desc')->first();
         $countOrder = $ordercount == null ? 1 : $ordercount->orderno_count + 1;
 
         $orderId = DB::connection('lp_own_db')->table('orders')->insertGetId([
             'order_no' => $this->generateOrderId(),
-            'advertiser_id' => $user_id,
+            'advertiser_id' => $getUserID,
             'status' => 1,
             'reseller_order' => 1,
             'created_at' => now(),
@@ -718,7 +718,7 @@ class MarketplaceAPIController extends Controller
                 'order_attributes.created_at', 'order_attributes.updated_at as start_date', 'order_attributes.total as price', 'order_attributes.with_comission_price', 'order_attributes.due_date', 'order_attributes.due_time', 'order_attributes.status', 'order_attributes.id as order_attr_id', 'order_attributes.content_modification', 'order_attributes.url', 'order_attributes.order_lable', 'order_attributes.original_expert_price', 'order_attributes.expert_price', 'order_attributes.discount_amount', 'order_attributes.total', 'order_attributes.content_writter', 'order_attributes.reject_type', 'order_attributes.reject_action_status', 'order_attributes.reject_reason', 'order_attributes.is_continue', 'order_attributes.tat as order_tat', 'order_attributes.req_price', 'order_attributes.order_type_category', 'order_attributes.remaining_time', 'order_attributes.is_lls_check','order_attributes.lls_status', 'order_attributes.affiliate_finalprice', 'websites.id as websiteID', 'websites.publisher_id', 'websites.website_url', 'websites.host_url', 'websites.tat', 'order_attributes.commission_price','order_attributes.value_addition', 'order_attributes.Preferred_language', 'order_attributes.reseller_order_lable',
                 DB::raw("'$fetchUserID' as fetchUserID"),
                 DB::raw("'$fetchUserName' as fetchUserName"),
-                DB::raw('(select count(*) from `socket_order_message` where  ( `to_id` = '.$user->id.') and `status` = 1 AND seen = 0 and order_id = `order_attributes`.`id` and is_reseller_msg = 1)  as new_msg')
+                DB::raw('(select count(*) from `socket_order_message` where  ( `to_id` = '.$fetchUserID.') and `status` = 1 AND seen = 0 and order_id = `order_attributes`.`id` and is_reseller_msg = 1)  as new_msg')
             );
 
         $status = $request->input('status', 1);
@@ -924,6 +924,8 @@ class MarketplaceAPIController extends Controller
         $token = str_replace('Bearer ', '', $authorizationHeader);
         $user = DB::table('reseller_users')->where('remember_token', $token)->first();
 
+        $fetchUserID = DB::connection('lp_own_db')->table('users')->where('email', $user->email)->value('id');
+
         if (!$user) {
             return response()->json([
                 'error' => 'Invalid token.',
@@ -931,7 +933,7 @@ class MarketplaceAPIController extends Controller
             ], 401);
         }
 
-        $newUnreadMsgCount = DB::connection('lp_own_db')->select("select count(socket_order_message.id) AS new FROM `socket_order_message`  JOIN order_attributes ON order_attributes.id=socket_order_message.order_id WHERE `socket_order_message`.`is_reseller_msg` = 1 and `socket_order_message`.`content_order_msg_or_not` is null AND `socket_order_message`.`seen` = 0  AND `order_attributes`.`status` != 0 AND `order_attributes`.`status` != 6 AND socket_order_message.admin_seen = 1 AND socket_order_message.status = 1 AND socket_order_message.to_id=".$user->id);
+        $newUnreadMsgCount = DB::connection('lp_own_db')->select("select count(socket_order_message.id) AS new FROM `socket_order_message`  JOIN order_attributes ON order_attributes.id=socket_order_message.order_id WHERE `socket_order_message`.`is_reseller_msg` = 1 and `socket_order_message`.`content_order_msg_or_not` is null AND `socket_order_message`.`seen` = 0  AND `order_attributes`.`status` != 0 AND `order_attributes`.`status` != 6 AND socket_order_message.admin_seen = 1 AND socket_order_message.status = 1 AND socket_order_message.to_id=".$fetchUserID);
 
         return response()->json(array('success' => true, 'count' => $newUnreadMsgCount[0]->new));
     }
