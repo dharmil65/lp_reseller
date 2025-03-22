@@ -778,4 +778,37 @@ class MarketplaceAPIController extends Controller
             'totalOrders' => array_sum($statusCounts->toArray()),
         ]);
     }
+
+    public function clientApprovalToComplete(Request $request)
+    {
+        $order_attribute_id = $request->param['order_attribute_id'];
+        if (strpos($order_attribute_id, '#') !== 0) {
+            $order_attribute_id = '#' . $order_attribute_id;
+        }
+        
+        $orderAttributeDetails = DB::connection('lp_own_db')
+            ->table('order_attributes')
+            ->where('order_lable', $order_attribute_id)
+            ->first();
+
+        if ($orderAttributeDetails && $orderAttributeDetails->status == 7) {
+            $updateInLP = DB::connection('lp_own_db')
+                ->table('order_attributes')
+                ->where('order_lable', $order_attribute_id)
+                ->update(['status' => 6]);
+
+            $getPublisher = DB::connection('lp_own_db')->table('order_attributes')->join('websites', 'websites.id', 'order_attributes.website_id')
+                ->join('users', 'users.id', 'websites.publisher_id')
+                ->where('order_attributes.order_lable', $order_attribute_id)
+                ->select('websites.website_url', 'users.name', 'users.email', 'order_attributes.order_lable', 'order_attributes.order_id', 'order_attributes.created_at', 'order_attributes.url', 'order_attributes.updated_at')->first();
+            
+            // $jsonArray = escapeshellarg(json_encode($getPublisher));
+            // $additionalParam = "orderCompleteMailToPublisher";
+            // $command = 'php ' . base_path('artisan') . ' background:mailSend ' . $jsonArray . ' ' . $additionalParam . '> /dev/null 2>&1 &';
+            // exec($command);
+            // $mail = MailHelper::orderCompleteMailPublisher($getPublisher);
+        }
+        
+        return response()->json(array('success' => true, 'message' => 'Order completed Successfully'));
+    }
 }

@@ -221,6 +221,37 @@
 					let status = $(this).data("status");
 					fetchOrders(status);
 				});
+
+				$(document).on('click', '.checked', function () {
+            
+					var order_attribute_id = $(this).parent().attr('data-oaid');
+					$('#multiAction'+order_attribute_id).css('display', 'none');
+					$('#srch'+order_attribute_id).css('display', 'block');
+					$(this).css('pointer-events', 'none');
+					var parameters={
+						'order_attribute_id':order_attribute_id
+					}
+					$('#loader-' + order_attribute_id).show();
+					$.ajax({
+						type: 'POST',
+						url: "/api/client-approval-to-complete",
+						data: {
+							'param': parameters,
+							"_token": "{{ csrf_token() }}"
+						},
+						headers: {
+                            "Authorization": "Bearer " + token,
+                        },
+						dataType: 'json',
+						success: function(data) {
+							$('#multiAction'+order_attribute_id).css('display', 'block');
+							window.setTimeout(function(){
+								$('#completed-tab').trigger('click');
+								fetchOrders(6);
+							}, 500);
+						}
+					});
+				});
 			});
 		</script>
 	</body>

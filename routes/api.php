@@ -45,3 +45,5 @@ Route::get('/cart/place-order', [MarketplaceAPIController::class, 'endClientOrde
 Route::get('/fetch-client-orders', [MarketplaceAPIController::class, 'fetchClientOrders'])->name('client-orders');
 
 Route::get('/reseller-order-data', [ResellerPanelAPIController::class, 'getResellerOrders'])->name('reseller-order-data');
+
+Route::POST('/client-approval-to-complete', [MarketplaceAPIController::class, 'clientApprovalToComplete'])->name('client-approval-to-complete');
