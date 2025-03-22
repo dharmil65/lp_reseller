@@ -840,6 +840,8 @@ class MarketplaceAPIController extends Controller
         }
 
         $getChatMessage = '';
+
+        DB::connection('lp_own_db')->table('socket_order_message')->where('to_id', $request->user_id)->where('order_id', $request->order_attribute_id)->where('status', 1)->update(array('seen' => 1));
         
         $chatMessage = DB::connection('lp_own_db')->table('socket_order_message')
             ->select('socket_order_message.*', 'socket_order_message.id AS message_created_at')
@@ -901,5 +903,30 @@ class MarketplaceAPIController extends Controller
         }, $text);
 
         return $newText;
+    }
+
+    public function clientUnreadMsgCounts(Request $request)
+    {
+        $authorizationHeader = $request->header('Authorization');
+        if (!$authorizationHeader || !Str::startsWith($authorizationHeader, 'Bearer ')) {
+            return response()->json([
+                'error' => 'Unauthorized. Token is required.',
+                'logout' => true
+            ], 401);
+        }
+
+        $token = str_replace('Bearer ', '', $authorizationHeader);
+        $user = DB::table('reseller_users')->where('remember_token', $token)->first();
+
+        if (!$user) {
+            return response()->json([
+                'error' => 'Invalid token.',
+                'logout' => true
+            ], 401);
+        }
+
+        $newUnreadMsgCount = DB::connection('lp_own_db')->select("select count(socket_order_message.id) AS new FROM `socket_order_message`  JOIN order_attributes ON order_attributes.id=socket_order_message.order_id WHERE `socket_order_message`.`content_order_msg_or_not` is null AND `socket_order_message`.`seen` = 0  AND `order_attributes`.`status` != 0 AND `order_attributes`.`status` != 6 AND socket_order_message.admin_seen = 1 AND socket_order_message.status = 1 AND socket_order_message.to_id=".$user->id);
+
+        return response()->json(array('success' => true, 'count' => $newUnreadMsgCount[0]->new));
     }
 }

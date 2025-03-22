@@ -49,3 +49,5 @@ Route::get('/reseller-order-data', [ResellerPanelAPIController::class, 'getResel
 Route::POST('/client-approval-to-complete', [MarketplaceAPIController::class, 'clientApprovalToComplete'])->name('client-approval-to-complete');
 
 Route::POST('/get-client-chat-message', [MarketplaceAPIController::class, 'getClientChatMessage'])->name('get-client-chat-message');
+
+Route::get('/client-unread-msg-counts', [MarketplaceAPIController::class, 'clientUnreadMsgCounts'])->name('client-unread-msg-counts');

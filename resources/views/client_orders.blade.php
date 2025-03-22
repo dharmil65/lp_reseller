@@ -244,6 +244,14 @@
 
 							$('#advertiser_order tbody').html(rows);
 
+							$("#newCount").text(`(${response.statusCounts[1] ?? 0})`);
+							$("#inProgressCount").text(`(${response.statusCounts[2] ?? 0})`);
+							$("#approveCount").text(`(${response.statusCounts[7] ?? 0})`);
+							$("#delayCount").text(`(${response.statusCounts[5] ?? 0})`);
+							$("#completeCount").text(`(${response.statusCounts[6] ?? 0})`);
+							$("#rejectCount").text(`(${response.statusCounts[0] ?? 0})`);
+							$("#allCount").text(`(${response.totalOrders ?? 0})`);
+
 							if (status == 7) {
 								$('.approval-only').show();
 							} else {
@@ -301,8 +309,7 @@
 					var status = $(this).attr('data-status');
 					var user_id = $(this).attr('data-userid');
 					
-					// getUnreadNewMsgCount();
-					// readMsgOrderWise(order_attribute_id);
+					getUnreadNewMsgCount();
 					
 					if(status == "6") {
 						status = "completed";
@@ -361,6 +368,28 @@
 					$('#message').val('');
 					$('#msg-error-chat').css('display', 'none');
 				});
+
+				function getUnreadNewMsgCount() {
+					$.ajax({
+						type: "GET",
+						url: "/api/client-unread-msg-counts",
+                        headers: {
+                            "Authorization": "Bearer " + token,
+                        },
+						dataType: 'json',
+						success: function(data) {
+							if (data.count > 0) {
+								if (data.count > 1) {
+									document.title = data.count + " New Messages";
+								} else {
+									document.title = data.count + " New Message";
+								}
+							}else{
+								document.title = 'Orders';
+							}
+						}
+					});
+				}
 			});
 		</script>
 	</body>
