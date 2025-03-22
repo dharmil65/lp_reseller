@@ -32,7 +32,7 @@ class RegisterAPIController extends Controller
 
             $checkIfReseller = DB::connection('lp_own_db')->table('resellers')->where('email', $request->email)->exists();
             if ($checkIfReseller) {
-                return response()->json(['message' => 'Email already registered as a reseller. Please login.'], 409);
+                return response()->json(['success' => false, 'message' => 'Email already registered as a reseller. Please login.', 'redirect_url' => route('login-client')], 409);
             }
 
             if (DB::table('reseller_users')->where('email', $request->email)->exists()) {

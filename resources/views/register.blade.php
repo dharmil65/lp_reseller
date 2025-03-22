@@ -362,9 +362,19 @@
                                 window.setTimeout(function(){
                                     $('.errorMsgClass').fadeOut('slow');
                                     window.location.href = response.redirect_url;
-                                }, 2000);
+                                }, 1500);
                             }
                         }
+                    },
+                    error: function(xhr, status, error) {
+                        let errorMessage = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Something went wrong, please try again.';
+                        $('.errorMsgClass').css('display', 'block');
+                        $('.columnError').html(errorMessage);
+                        setTimeout(function() {
+                            $('.errorMsgClass').fadeOut('slow');
+                            window.location.href = xhr.responseJSON.redirect_url;
+                        }, 1500);
+                        return false;
                     }
                 });
             });

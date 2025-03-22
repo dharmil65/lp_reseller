@@ -494,7 +494,7 @@ $(document).ready(function () {
                 if (response.cartTotal == 0) {
                     $('#cartcount').addClass('d-none').text('');
                 } else {
-                    $('#cartcount').removeClass('d-none').text(response.cartTotal);
+                    $('#cartcount').show().removeClass('d-none').text(response.cartTotal);
                 }
             },
             error: function (xhr) {
