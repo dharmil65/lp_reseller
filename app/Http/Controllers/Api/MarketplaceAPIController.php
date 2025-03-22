@@ -707,10 +707,17 @@ class MarketplaceAPIController extends Controller
             ], 401);
         }
 
-        $query = DB::connection('lp_own_db')
-            ->table('order_attributes')
+        $fetchUserID = DB::connection('lp_own_db')->table('users')->where('email', $user->email)->value('id');
+
+        $query = DB::connection('lp_own_db')->table('order_attributes')
+            ->join('websites', 'websites.id', 'order_attributes.website_id')
             ->where('order_attributes.end_client_id', $user->id)
-            ->whereNull('order_attributes.deleted_at');
+            ->whereNull('order_attributes.deleted_at')
+            ->select(
+                'order_attributes.created_at', 'order_attributes.updated_at as start_date', 'order_attributes.total as price', 'order_attributes.with_comission_price', 'order_attributes.due_date', 'order_attributes.due_time', 'order_attributes.status', 'order_attributes.id as order_attr_id', 'order_attributes.content_modification', 'order_attributes.url', 'order_attributes.order_lable', 'order_attributes.original_expert_price', 'order_attributes.expert_price', 'order_attributes.discount_amount', 'order_attributes.total', 'order_attributes.content_writter', 'order_attributes.reject_type', 'order_attributes.reject_action_status', 'order_attributes.reject_reason', 'order_attributes.is_continue', 'order_attributes.tat as order_tat', 'order_attributes.req_price', 'order_attributes.order_type_category', 'order_attributes.remaining_time', 'order_attributes.is_lls_check','order_attributes.lls_status', 'order_attributes.affiliate_finalprice', 'websites.id as websiteID', 'websites.publisher_id', 'websites.website_url', 'websites.host_url', 'websites.tat', 'order_attributes.commission_price','order_attributes.value_addition', 'order_attributes.Preferred_language', 'order_attributes.reseller_order_lable',
+                DB::raw($fetchUserID . ' as fetchUserID'),
+                DB::raw('(select count(*) from `socket_order_message` where  ( `to_id` = '.$user->id.') and `status` = 1 AND seen = 0 and order_id = `order_attributes`.`id`)  as new_msg')
+            );
 
         $status = $request->input('status', 1);
 
@@ -719,11 +726,11 @@ class MarketplaceAPIController extends Controller
         }
 
         $getOrderData = $query->orderBy('order_attributes.id', 'desc')->get();
-
+        
         foreach ($getOrderData as $order) {
             $order->host_url = DB::connection('lp_own_db')
                 ->table('websites')
-                ->where('id', $order->website_id)
+                ->where('id', $order->websiteID)
                 ->value('host_url') ?? '-';
 
             $checkLable = DB::connection('lp_own_db')
@@ -810,5 +817,89 @@ class MarketplaceAPIController extends Controller
         }
         
         return response()->json(array('success' => true, 'message' => 'Order completed Successfully'));
+    }
+
+    public function getClientChatMessage(Request $request)
+    {
+        $authorizationHeader = $request->header('Authorization');
+        if (!$authorizationHeader || !Str::startsWith($authorizationHeader, 'Bearer ')) {
+            return response()->json([
+                'error' => 'Unauthorized. Token is required.',
+                'logout' => true
+            ], 401);
+        }
+
+        $token = str_replace('Bearer ', '', $authorizationHeader);
+        $user = DB::table('reseller_users')->where('remember_token', $token)->first();
+
+        if (!$user) {
+            return response()->json([
+                'error' => 'Invalid token.',
+                'logout' => true
+            ], 401);
+        }
+
+        $getChatMessage = '';
+        
+        $chatMessage = DB::connection('lp_own_db')->table('socket_order_message')
+            ->select('socket_order_message.*', 'socket_order_message.id AS message_created_at')
+            ->join('order_attributes', 'order_attributes.id', '=', 'socket_order_message.order_id')
+            ->where('socket_order_message.content_order_msg_or_not', null)
+            ->where('socket_order_message.order_id', $request->order_attribute_id)
+            ->where('to_id', $request->user_id)
+            ->where('admin_seen', 1)
+            ->where('socket_order_message.status',1)
+            ->orderBy('socket_order_message.created_at', 'ASC')
+            ->union(
+                DB::table('socket_order_message')
+                    ->select('socket_order_message.*', 'socket_order_message.id AS message_created_at')
+                    ->join('order_attributes', 'order_attributes.id', '=', 'socket_order_message.order_id')
+                    ->where('socket_order_message.content_order_msg_or_not', null)
+                    ->where('socket_order_message.order_id', $request->order_attribute_id)
+                    ->where('from_id', $request->user_id)
+                    ->orderBy('socket_order_message.created_at', 'ASC')
+            )->orderBy('message_created_at', 'ASC')
+            ->get();
+        
+        if ($chatMessage) {
+            foreach ($chatMessage as $chat) {
+                $getChatMessage = $chat->body;
+                if ($this->containsUrl($getChatMessage)) {
+                    $getChatMessageWithLinks = $this->makeUrlsClickable($getChatMessage);
+                    $chat->body_with_links = $getChatMessageWithLinks;
+                    $getChatMessage = strip_tags($getChatMessage);
+                }
+            }
+        }
+
+        $order_status = $request->order_status;
+        
+        $user_id = $request->user_id;
+
+        $returnHTML = view('chatbody', compact('chatMessage', 'order_status', 'user_id'))->render();
+        
+        return response()->json(array('success' => true,'html'=>$returnHTML));
+    }
+
+    private function containsUrl($text)
+    {
+        $urlRegex = '/(?:https?:\/\/)?(?:www\.)?[^\s]+\.[^\s]{2,}(?:\.[^\s]{2,})?(?:\/[^\s]*)?\b/';
+        return preg_match($urlRegex, $text);
+    }
+
+    public function makeUrlsClickable($text)
+    {
+        $urlRegex = '/(?:https?:\/\/)?(?:www\.)?[^\s]+\.[^\s]{2,}(?:\.[^\s]{2,})?(?:\/[^\s]*)?\b/';
+        $newText = preg_replace_callback($urlRegex, function ($matches) {
+            $url = $matches[0];
+            if (!preg_match('/^https?:\/\//i', $url)) {
+                $newUrl = 'https://' . $url;
+            } else {
+                $newUrl = $url;
+            }
+            return '<a href="' . $newUrl . '" target="_blank">' . $url . '</a>';
+        }, $text);
+
+        return $newText;
     }
 }

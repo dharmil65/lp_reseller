@@ -60,8 +60,8 @@ class RegisterAPIController extends Controller
             if (!$checkIfExistsInLPUsers) {
                 DB::connection('lp_own_db')->table('reseller_users')->insert($resellerData);
                 $userId = DB::connection('lp_own_db')->table('users')->insertGetId([
-                    'name' => bcrypt($resellerData['name']),
-                    'email' => bcrypt($resellerData['email']),
+                    'name' => $resellerData['name'],
+                    'email' => $resellerData['email'],
                     'password' => bcrypt($resellerData['password']),
                     'register_from' => "reseller_client",
                     'billing_country_name' => ''

@@ -47,3 +47,5 @@ Route::get('/fetch-client-orders', [MarketplaceAPIController::class, 'fetchClien
 Route::get('/reseller-order-data', [ResellerPanelAPIController::class, 'getResellerOrders'])->name('reseller-order-data');
 
 Route::POST('/client-approval-to-complete', [MarketplaceAPIController::class, 'clientApprovalToComplete'])->name('client-approval-to-complete');
+
+Route::POST('/get-client-chat-message', [MarketplaceAPIController::class, 'getClientChatMessage'])->name('get-client-chat-message');

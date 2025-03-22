@@ -145,6 +145,45 @@
 		        </div>
 		    </section>
 		</div>
+
+		<div class="modal chat_popup" id="new_chat_popup" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="orderlabel_no">Order ID: #4045</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true"><i class="fas fa-times"></i></span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="send chat-content" id="message-box">
+							<div class="messagesss temschat">
+								<p> <b><span><img src="{{asset('assets/images/buyer-red.png')}}"></span>It is prohibited :</b><br>
+									1. To establish any personal contact outside Link Publishers and share contact details. <br>
+									2. To discuss about Link Publishers’ prices.<br>
+									All messages exchanged here are monitored. Link Publishers holds the authority to suspend or ban your account if any unauthorized activity is noticed or anyone violates our guidelines.
+								</p>
+							</div>
+							<div id="chat_body">
+							</div>
+							<div class="messagesss temschat complete_order_chat_msg" style="display:none;"><p> Chat is disabled as this order is completed. </p></div>
+							<div class="messagesss temschat reject_order_chat_msg" style="display:none;"><p> Chat is disabled as this order is rejected. </p></div>
+						</div>
+						<div id="bottom" tabindex='1'>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<div class="form-group">
+							<input type="hidden" name="to_id" id="to_id" value="">
+							<input type="hidden" name="order_id" id="order_id" class="order_id" value="">
+							<textarea autocomplete="off" type="text" id="message" name="message" style="background: #F6F6F6;" placeholder="Type your message..."></textarea>
+							<button id="send-message" class="btn chat-btn"><img src="{{asset('assets/images/chat-send.png')}}" /></button>
+							<span id="msg-error-chat" class="error" style="display:none">Please enter message</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 		<script>
 			$(document).ready(function () {
                 var token = localStorage.getItem("api_token");
@@ -173,7 +212,7 @@
 										<td>${new Date(order.created_at).toLocaleDateString()}</td>
 										<td>${order.reseller_order_lable ?? '-'}</td>
 										<td>${order.host_url !== '-' ? `<a href="${formattedUrl}" target="_blank">${order.host_url}</a>` : '-'}</td>
-										<td>${order.total && order.total > 0 ? '$' + order.total.toLocaleString() : '--'}</td>
+										<td>${order.price && order.price > 0 ? '$' + order.price.toLocaleString() : '--'}</td>
 										<td>${order.prefered_language ?? 'English'}</td>
 										<td>${order.content_type ?? '-'}</td>`;
 
@@ -186,7 +225,7 @@
 
 									rows += `
 										<td>
-											<a href="javascript:void(0);" class="chat-icon" data-oaid="${order.order_attr_id}">
+											<a href="javascript:void(0);" class="chat-icon" data-userid="${order.fetchUserID}" data-orderlabel="${order.order_lable}" data-publisher="${order.publisher_id}" data-oaid="${order.order_attr_id}" data-status="1">
 												<img src="{{ asset('assets/images/comment-icon.png') }}" alt="chat">
 											</a>
 										</td>
@@ -251,6 +290,76 @@
 							}, 500);
 						}
 					});
+				});
+
+				$(document).on('click', '.chat-icon', function() {
+					$('#msg-error-chat').css('display', 'none');
+					
+					var orderlabel = $(this).attr('data-orderlabel');
+					var order_attribute_id = $(this).attr('data-oaid');
+					var publisher_id = $(this).attr('data-publisher');
+					var status = $(this).attr('data-status');
+					var user_id = $(this).attr('data-userid');
+					
+					// getUnreadNewMsgCount();
+					// readMsgOrderWise(order_attribute_id);
+					
+					if(status == "6") {
+						status = "completed";
+					} else if(status == "0") {
+						status = "rejected";
+					}
+
+					if(status == "completed"){
+						$('#message').css('display', 'none');
+						$('.chat-btn').css('display', 'none');
+						$('.complete_order_chat_msg').css('display', 'block');
+						$('.reject_order_chat_msg').css('display', 'none');
+					} else if(status == "rejected"){
+						$('#message').css('display', 'none');
+						$('.chat-btn').css('display', 'none');
+						$('.reject_order_chat_msg').css('display', 'block');
+						$('.complete_order_chat_msg').css('display', 'none');
+					} else {
+						$('#message').css('display', 'block');
+						$('.chat-btn').css('display', 'block');
+						$('.complete_order_chat_msg').css('display', 'none');
+						$('.reject_order_chat_msg').css('display', 'none');
+					}
+
+					$('#to_id').val(publisher_id);
+					$('#order_id').val(order_attribute_id);
+
+					$.ajax({
+						type: 'POST',
+						url: "/api/get-client-chat-message",
+						data: {
+							'order_attribute_id': order_attribute_id,
+							'order_status': status,
+							'user_id': user_id,
+							"_token": "{{ csrf_token() }}"
+						},
+						headers: {
+                            "Authorization": "Bearer " + token,
+                        },
+						dataType: 'json',
+						success: function(data) {
+							$('#orderlabel_no').text("Order ID: " + orderlabel);
+							$('#chat_body').html(data.html);
+							$('.chat_popup .modal-body').animate({scrollTop: $('.chat_popup .modal-body').prop("scrollHeight")}, 0);
+							$('#new_chat_popup').modal({
+								backdrop: true,
+								keyboard: true
+							});
+							$('.chat-icon[data-id="'+order_attribute_id +'"]').find('span').removeClass("has-comments");
+							$('.chat_popup .modal-body').animate({scrollTop: $('.chat_popup .modal-body').prop("scrollHeight")}, 0);
+						}
+					});
+				});
+
+				$('#new_chat_popup').on('hidden.bs.modal', function() {
+					$('#message').val('');
+					$('#msg-error-chat').css('display', 'none');
 				});
 			});
 		</script>
