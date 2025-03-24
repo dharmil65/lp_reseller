@@ -44,6 +44,13 @@
     .hide_column {
         display : none;
     }
+    .advertiser-details .advertiser-user img {
+        margin-right: 6px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        padding-right: 0 !important;
+    }
 </style>
 <input type="hidden" name="res_id" id="res_id" value="">
 <div class="box-body " id="order_table_list">
@@ -72,12 +79,11 @@
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Order ID: #4045</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body" id="message-box1">
                 <div class="chat-admin" id="message-box">
-                    
                 </div>   
             </div>
             <div class="modal-footer">
@@ -169,7 +175,7 @@
                     $('.chat_popup').show();
                     $('#message-box').html(data.html);
                     $('.chat_popup .modal-body').animate({scrollTop: $('.chat_popup .modal-body').prop("scrollHeight")}, 0);
-                    $('#new_chat_popup').modal({
+                    $('.chat_popup').modal({
                         backdrop: true,
                         keyboard: true
                     });

@@ -886,9 +886,10 @@ class MarketplaceAPIController extends Controller
         $order_status = $request->order_status;
         
         $user_id = $request->user_id;
+        $name = DB::connection('lp_own_db')->table('users')->where('id', $user_id)->value('name');
 
         if ($reseller_id) {
-            $returnHTML = view('reseller_chatbody', compact('chatMessage', 'order_status', 'user_id'))->render();
+            $returnHTML = view('reseller_chatbody', compact('chatMessage', 'order_status', 'user_id', 'name'))->render();
         } else {
             $returnHTML = view('chatbody', compact('chatMessage', 'order_status', 'user_id'))->render();
         }

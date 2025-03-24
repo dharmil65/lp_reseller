@@ -18,14 +18,14 @@
             @else
                 <p class="deleted_msg">{{ $val->body }}</p>
                 <a class="deleted-msg-tooltip chat-tooltip" buyer-title="Deleted message: Your message is in violation of the terms and conditions.">
-                    <img src="{{ asset('assets/images/buyer-icon.png') }}">
+                    <img src="{{ asset('assets/images/no-image.png') }}">
                 </a>
             @endif
             <div class="advertiser-details">
                 <span class="advertiser-user">
-                    <img src="{{ asset('assets/images/buyer-icon.png') }}">
+                    <img src="{{ asset('assets/images/no-image.png') }}">
                     <p>
-                        {{ "Publisher" }} <b>{{ ($user_id == $val->from_id) ? 'Advertiser' : 'Publisher' }}</b>, {{ date('h:i A', strtotime($val->created_at)) }}
+                        <b>{{ ($user_id == $val->from_id) ? ((isset($name) && $name != null) ? $name : 'Advertiser') : 'LP Support' }}</b>, {{ date('h:i A', strtotime($val->created_at)) }}
                     </p>   
                 </span>
             </div>
@@ -41,14 +41,14 @@
             @else
                 <p class="deleted_msg">{{ $val->body }}</p>
                 <a class="deleted-msg-tooltip chat-tooltip" buyer-title="Deleted message: Your message is in violation of the terms and conditions.">
-                    <img src="{{ asset('assets/images/buyer-icon.png') }}">
+                    <img src="{{ asset('assets/images/no-image.png') }}">
                 </a>
             @endif
             <div class="advertiser-details">
                 <span class="advertiser-user">
-                    <img src="{{ asset('assets/images/buyer-icon.png') }}">
+                    <img src="{{ asset('assets/images/no-image.png') }}">
                     <p>
-                        {{ "Advertiser" }} <b>{{ ($user_id == $val->from_id) ? 'Advertiser' : 'Publisher' }}</b>, {{ date('h:i A', strtotime($val->created_at)) }}
+                        <b>{{ ($user_id == $val->from_id) ? ((isset($name) && $name != null) ? $name : 'Advertiser') : 'LP Support' }}</b>, {{ date('h:i A', strtotime($val->created_at)) }}
                     </p>   
                 </span>
             </div>
