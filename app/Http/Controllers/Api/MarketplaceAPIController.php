@@ -563,6 +563,8 @@ class MarketplaceAPIController extends Controller
                         'reseller_order' => 1,
                         'price' => $advertiserCartListing[$i]['wihthout_commission_guest_post_price'],
                         'total' => $advertiserCartListing[$i]['total'],
+                        'due_date' => $due_date,
+                        'due_time' => Carbon::now()->format('H:i:s'),
                     ]);
                 } catch (Exception $e) {
                     \Log::info(['error while inserting data in lp_own_db.order_attributes', $e]);

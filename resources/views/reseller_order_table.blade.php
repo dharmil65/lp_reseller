@@ -111,17 +111,17 @@
                 }
             },
             columns: [
-                { data: 'created_at', name: 'created_at' },
-                { data: 'reseller_order_lable', name: 'reseller_order_lable' },
-                { data: 'order_lable', name: 'order_lable' },
+                { data: 'created_at', name: 'created_at', defaultContent: '--' },
+                { data: 'reseller_order_lable', name: 'reseller_order_lable', defaultContent: '--' },
+                { data: 'order_lable', name: 'order_lable', defaultContent: '--' },
                 { data: 'website_id', name: 'website_id', orderable: false, searchable: false },
-                { data: 'content_writter', name: 'content_writter' },
+                { data: 'content_writter', name: 'content_writter', defaultContent: '--' },
                 { data: 'Preferred_language', name: 'language', defaultContent: 'English' },
-                { data: 'due_date', name: 'due_date' },
-                { data: 'due_time', name: 'due_time' },
+                { data: 'due_date', name: 'due_date', defaultContent: '--' },
+                { data: 'due_time', name: 'due_time', defaultContent: '--' },
                 { data: 'status', name: 'status', visible: false },
-                { data: 'total', name: 'price' },
-                { data: 'chat', name: 'chat' }
+                { data: 'total', name: 'price', defaultContent: '0' },
+                { data: 'chat', name: 'chat', defaultContent: '0' }
             ],
             order: [[0, 'desc']]
         });
