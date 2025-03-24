@@ -219,7 +219,7 @@
                 <ul>
                     <li><a href="#" class="">Dashboard</a></li>
                     <li><a href="{{ route('client_marketplace') }}" class="active">Marketplace</a></li>
-                    <li><a href="" class="">My Orders</a></li>
+                    <li><a href="{{ route('client_orders') }}" class="">My Orders</a></li>
                 </ul>
             </nav>
             <div class="menu-icon icon-menu">

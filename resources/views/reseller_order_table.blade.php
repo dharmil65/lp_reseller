@@ -66,26 +66,24 @@
     </table>
 </div>
 
-<div class="modal chat_popup" id="new_chat_popup" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal chat_popup" id="chat_popup" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" >
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="orderlabel_no">Order ID: #4045</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Order ID: #4045</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true"><i class="fas fa-times"></i></span>
+                <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="send chat-content" id="message-box">
-                    <div id="chat_body">
-                    </div>
-                </div>
+            <div class="modal-body" id="message-box1">
+                <div class="chat-admin" id="message-box">
+                    
+                </div>   
             </div>
             <div class="modal-footer">
-                <div class="form-group">
-                    <input type="hidden" name="to_id" id="to_id" value="">
-                    <input type="hidden" name="order_id" id="order_id" class="order_id" value="">
-                </div>
+                <input type="hidden" name="id" id="id" value="0">
+                <input type="hidden" name="order_id" id="order_id" value="0">
+                
             </div>
         </div>
     </div>
@@ -147,32 +145,13 @@
             var publisher_id = $(this).attr('data-publisher');
             var status = $(this).attr('data-status');
             var user_id = $(this).attr('data-userid');
-            
-            if(status == "6") {
-                status = "completed";
-            } else if(status == "0") {
-                status = "rejected";
-            }
-
-            if(status == "completed"){
-                $('#message').css('display', 'none');
-                $('.chat-btn').css('display', 'none');
-                $('.complete_order_chat_msg').css('display', 'block');
-                $('.reject_order_chat_msg').css('display', 'none');
-            } else if(status == "rejected"){
-                $('#message').css('display', 'none');
-                $('.chat-btn').css('display', 'none');
-                $('.reject_order_chat_msg').css('display', 'block');
-                $('.complete_order_chat_msg').css('display', 'none');
-            } else {
-                $('#message').css('display', 'block');
-                $('.chat-btn').css('display', 'block');
-                $('.complete_order_chat_msg').css('display', 'none');
-                $('.reject_order_chat_msg').css('display', 'none');
-            }
 
             $('#to_id').val(publisher_id);
             $('#order_id').val(order_attribute_id);
+
+            $('#exampleModalLabel').html('Order ID : ' + orderlabel);
+            $('#message').val('');
+            $('#message-box').html('');
 
             $.ajax({
                 type: 'POST',
@@ -187,7 +166,8 @@
                 dataType: 'json',
                 success: function(data) {
                     $('#orderlabel_no').text("Order ID: " + orderlabel);
-                    $('#chat_body').html(data.html);
+                    $('.chat_popup').show();
+                    $('#message-box').html(data.html);
                     $('.chat_popup .modal-body').animate({scrollTop: $('.chat_popup .modal-body').prop("scrollHeight")}, 0);
                     $('#new_chat_popup').modal({
                         backdrop: true,

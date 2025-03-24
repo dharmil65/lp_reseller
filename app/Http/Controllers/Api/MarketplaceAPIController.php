@@ -887,7 +887,11 @@ class MarketplaceAPIController extends Controller
         
         $user_id = $request->user_id;
 
-        $returnHTML = view('chatbody', compact('chatMessage', 'order_status', 'user_id'))->render();
+        if ($reseller_id) {
+            $returnHTML = view('reseller_chatbody', compact('chatMessage', 'order_status', 'user_id'))->render();
+        } else {
+            $returnHTML = view('chatbody', compact('chatMessage', 'order_status', 'user_id'))->render();
+        }
         
         return response()->json(array('success' => true,'html'=>$returnHTML));
     }
