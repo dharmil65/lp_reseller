@@ -56,7 +56,7 @@
                 <th>Language</th>
                 <th>Due Date</th>
                 <th>Due Time</th>
-                <th>Status</th>
+                <th id="statusColumn">Status</th>
                 <th>Price</th>
             </tr>
         </thead>
@@ -85,7 +85,7 @@
                 { data: 'Preferred_language', name: 'language', defaultContent: 'English' },
                 { data: 'due_date', name: 'due_date' },
                 { data: 'due_time', name: 'due_time' },
-                { data: 'status', name: 'status' },
+                { data: 'status', name: 'status', visible: false },
                 { data: 'total', name: 'price' }
             ],
             order: [[0, 'desc']]
@@ -96,6 +96,14 @@
             $(this).addClass('active');
 
             let status = $(this).data('status') || 'all';
+
+            if ($(this).attr('id') === 'All_id') {
+                $('#statusColumn').show();
+                table.column(8).visible(true);
+            } else {
+                $('#statusColumn').hide();
+                table.column(8).visible(false);
+            }
 
             table.ajax.url('/api/reseller-order-data').load();
             table.ajax.reload(null, false);

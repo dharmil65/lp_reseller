@@ -57,6 +57,17 @@ class ResellerPanelAPIController extends Controller
                     ];
                     return $content_map[$order->content_writter] ?? '-';
                 })
+                ->editColumn('status', function ($order) {
+                    $statusLabels = [
+                        1 => 'New',
+                        2 => 'In Progress',
+                        5 => 'Delayed',
+                        7 => 'Delivered',
+                        6 => 'Completed',
+                        0 => 'Rejected',
+                    ];
+                    return $statusLabels[$order->status] ?? '--';
+                })
                 ->rawColumns(['website_id'])
                 ->toJson();
 
