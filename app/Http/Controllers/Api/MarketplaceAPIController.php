@@ -825,27 +825,30 @@ class MarketplaceAPIController extends Controller
 
     public function getClientChatMessage(Request $request)
     {
-        $authorizationHeader = $request->header('Authorization');
-        if (!$authorizationHeader || !Str::startsWith($authorizationHeader, 'Bearer ')) {
-            return response()->json([
-                'error' => 'Unauthorized. Token is required.',
-                'logout' => true
-            ], 401);
+        $reseller_id = $request->reseller_id;
+        if (!$reseller_id) {
+            $authorizationHeader = $request->header('Authorization');
+            if (!$authorizationHeader || !Str::startsWith($authorizationHeader, 'Bearer ')) {
+                return response()->json([
+                    'error' => 'Unauthorized. Token is required.',
+                    'logout' => true
+                ], 401);
+            }
+    
+            $token = str_replace('Bearer ', '', $authorizationHeader);
+            $user = DB::table('reseller_users')->where('remember_token', $token)->first();
+    
+            if (!$user) {
+                return response()->json([
+                    'error' => 'Invalid token.',
+                    'logout' => true
+                ], 401);
+            }
+            
+            $getChatMessage = '';
+    
+            DB::connection('lp_own_db')->table('socket_order_message')->where('to_id', $request->user_id)->where('order_id', $request->order_attribute_id)->where('status', 1)->where('is_reseller_msg', 1)->update(array('seen' => 1));
         }
-
-        $token = str_replace('Bearer ', '', $authorizationHeader);
-        $user = DB::table('reseller_users')->where('remember_token', $token)->first();
-
-        if (!$user) {
-            return response()->json([
-                'error' => 'Invalid token.',
-                'logout' => true
-            ], 401);
-        }
-
-        $getChatMessage = '';
-
-        DB::connection('lp_own_db')->table('socket_order_message')->where('to_id', $request->user_id)->where('order_id', $request->order_attribute_id)->where('status', 1)->where('is_reseller_msg', 1)->update(array('seen' => 1));
         
         $chatMessage = DB::connection('lp_own_db')->table('socket_order_message')
             ->where('socket_order_message.is_reseller_msg', 1)

@@ -23,16 +23,17 @@ class ResellerPanelAPIController extends Controller
             $orders = DB::connection('lp_own_db')
                 ->table('order_attributes')
                 ->join('websites', 'websites.id', 'order_attributes.website_id')
+                ->join('orders', 'orders.id', 'order_attributes.order_id')
                 ->where('reseller_id', $reseller_id)
-                ->select('order_attributes.created_at', 'order_attributes.order_lable', 'order_attributes.reseller_order_lable', 'order_attributes.website_id', 'order_attributes.content_writter', 'order_attributes.Preferred_language', 'order_attributes.due_date', 'order_attributes.due_time', 'order_attributes.status', 'order_attributes.price', 'order_attributes.total', 'order_attributes.id as order_attr_id', 'websites.publisher_id', 'websites.website_url', 'websites.host_url')
+                ->select('order_attributes.created_at', 'order_attributes.order_lable', 'order_attributes.reseller_order_lable', 'order_attributes.website_id', 'order_attributes.content_writter', 'order_attributes.Preferred_language', 'order_attributes.due_date', 'order_attributes.due_time', 'order_attributes.status', 'order_attributes.price', 'order_attributes.total', 'order_attributes.id as order_attr_id', 'websites.publisher_id', 'websites.website_url', 'websites.host_url', 'orders.advertiser_id')
                 ->orderBy('order_attributes.id', 'desc');
 
             if ($request->has('status') && $request->status !== 'all') {
                 $orders->where('order_attributes.status', $request->status);
             }
 
-            $fetchResellerEmail = DB::connection('lp_own_db')->table('resellers')->where('id', $reseller_id)->value('email');
-            $fetchUserID = DB::connection('lp_own_db')->table('users')->where('email', $fetchResellerEmail)->value('id');
+            // $fetchResellerEmail = DB::connection('lp_own_db')->table('resellers')->where('id', $reseller_id)->value('email');
+            // $fetchUserID = DB::connection('lp_own_db')->table('users')->where('email', $fetchResellerEmail)->value('id');
 
             return DataTables::of($orders)
                 ->editColumn('created_at', function ($order) {
@@ -65,9 +66,9 @@ class ResellerPanelAPIController extends Controller
                     ];
                     return $statusLabels[$order->status] ?? '--';
                 })
-                ->addColumn('chat', function ($order) use($fetchUserID) {
+                ->addColumn('chat', function ($order) {
                     return '<a href="javascript:void(0);" class="chat-icon" 
-                        data-userid="' . $fetchUserID . '" 
+                        data-userid="' . $order->advertiser_id . '" 
                         data-orderlabel="' . $order->order_lable . '" 
                         data-publisher="' . $order->publisher_id . '" 
                         data-oaid="' . $order->order_attr_id . '" 
