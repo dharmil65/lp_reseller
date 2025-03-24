@@ -995,4 +995,42 @@ class MarketplaceAPIController extends Controller
         
         return response()->json(['success' => true, 'message' => 'Message sent successfully!', 'id' => $chatId]);
     }
+
+    public function hireCartDataDetail(Request $request)
+    {
+        $cartDetails =  DB::table('carts')
+            ->leftJoin('phpfmv_gpmarketplace.websites', 'carts.website_id', '=', 'websites.id')
+            ->where('carts.id', $request->cart_id)
+            ->select('carts.*', 'websites.dofollow_link', 'websites.nofollow_link')
+            ->first();
+
+        $websiteDetail = DB::connection('lp_own_db')->table('advertiser_marketplace')->where('website_id', $cartDetails->website_id)->first();
+
+        $expertprice = DB::connection('lp_own_db')->table('expert_prices')->where('status', 1)
+            ->orderByRaw("CAST(SUBSTRING_INDEX(name, ' ', 1) AS UNSIGNED) ASC")
+            ->get()
+            ->toArray();
+
+        $countries = DB::connection('lp_own_db')->table('countries')->get();
+
+        if ($cartDetails->marketplace_type == 1) {
+            $categories = DB::connection('lp_own_db')->table('categories')->where('other_category_status', 1)->orderby('name', 'asc')->get()->toArray();
+        } else {
+            $categories = DB::connection('lp_own_db')->table('categories')->where('other_category_status', 0)->orderby('name', 'asc')->get()->toArray();
+        }
+
+        $languageData = DB::connection('lp_own_db')->table('websites')->where('id', $cartDetails->website_id)->select('language')->first();
+        $languageList = explode(',', $languageData->language);
+
+        $cartListHtml =  view('hire_detail', compact(
+            'cartDetails',
+            'categories',
+            'expertprice',
+            'countries',
+            'websiteDetail',
+            'languageList'
+        ))->render();
+
+        return response()->json(array('success' => true, 'cartListHtml' => $cartListHtml, 'cartDetails'=>$cartDetails , 'languageList' => $languageList, 'cart data fetch'));
+    }
 }

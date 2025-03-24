@@ -53,3 +53,5 @@ Route::POST('/get-client-chat-message', [MarketplaceAPIController::class, 'getCl
 Route::get('/client-unread-msg-counts', [MarketplaceAPIController::class, 'clientUnreadMsgCounts'])->name('client-unread-msg-counts');
 
 Route::POST('/send-message', [MarketplaceAPIController::class, 'sendMessage'])->name('send-message');
+
+Route::POST('/cart/hire-cart-data-detail', [MarketplaceAPIController::class, 'hireCartDataDetail'])->name('hire-cart-data-detail');

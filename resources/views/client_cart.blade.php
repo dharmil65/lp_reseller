@@ -514,6 +514,155 @@
     </div>
 </div>
 
+<div class="modal fade hire-content-modal" id="hire_content" tabindex="-1" role="dialog" aria-labelledby="provide-content-modal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title hire_content_backlink" id="exampleModalLabel">
+                    <span class="backlink-title" id="hire_backlink"> Backlink 2: </span> <span class="content-title">Hire Content Writer</span> <span class="hire_content_price" data-price="" id="hire_content_price"></span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="attachFileClose">
+                    <span aria-hidden="true"><img src="{{asset('assets/images/cart-close.svg')}}" alt="cart-close"></span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="download-sample">
+                    <a target="_blank" href="https://drive.google.com/drive/folders/1eiUIT6U0zmEgxeXSrVGHVDp2QNof57iI" class="btn button btn-primary">Download Sample <img src="{{asset('assets/images/cart-download-sample.svg')}}" alt="cart-download-sample"> </a>
+                </div>
+                <form class="cart-form hire_content_detail" id="hire_content_detail" enctype="multipart/form-data">
+                    <input type="hidden" name="hire_content_cart_id" id="hire_content_cart_id" value="">
+                    <input type="hidden" name="hire_content_website_id" id="hire_content_website_id" value="">
+                    <input type="hidden" name="hire_content_marketplace_type" id="hire_content_marketplace_type" value="">
+                    <input type="hidden" name="hire_content_quantity" id="hire_content_quantity" value="">
+
+                    <div class="row" id="hire_content_detail_data">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="word">Word Count<span>*</span></label>
+                                <select name="word_count" class="word_count" id="word_count">
+                                    <option value="">Select Word Count</option>
+                                </select>
+
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="suggestion">Title Suggestion</label>
+                                <input type="text" id="titlesuggestion" class="titlesuggestion" name="titlesuggestion" placeholder="Suggest Title">
+                                <input type="hidden" id="follow_link_hire_content_writer" class="follow_link_hire_content_writer" name="follow_link_hire_content_writer">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="word">Category<span>*</span></label>
+                                <select name="category" class="category" id="category">
+                                    <option value="">Select Category</option>
+                                </select>
+                                <label id="category-error" style="display:none" class="invalid" for="category">The category field is required</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="word">Keywords<span>*</span></label>
+                                <input type="text" id="keywords" class="keywords" name="keywords" placeholder="Provide Keywords; Separated by comma">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="prefered_language">Language<span>*</span></label>
+                                <select name="prefered_language" class="prefered_language" id="prefered_language">
+                                    <option value="">Select Language</option>
+                                </select>
+                                <label id="prefered_language-error" style="display:none" class="invalid" for="prefered_language">The prefered language field is required</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="referencelink">Reference Link<span>*</span></label>
+                                <input type="text" name="referencelink" id="referencelink" placeholder="eg. https://example.com">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="anchortext">Anchor Text<span>*</span></label>
+                                <input type="text" name="anchortext" id="anchortext" placeholder="Enter Anchor text">
+                                <label style="display: none;" id="anchortext-error" class="invalid" for="anchortext">The anchor text field is required</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group landing-group">
+                                <label for="targeturl">Landing Page URL<span>*</span></label>
+                                <input type="text" name="targeturl" id="targeturl"
+                                    placeholder="Enter Landing Page URL">
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-12" id="dynamicInputContainer"></div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="country">Target Audience is from (Country)<span>*</span></label>
+                                <select name="target_audience" class="target_audience" id="target_audience">
+                                    <option value="">Select Target Audience</option>
+
+
+                                </select>
+                                <label id="target_audience-error" style="display:none" class="invalid" for="target_audience">The target audience field is required</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="word">Brief Note</label>
+                                <textarea cols="20" rows="6" id="briefnote" name="briefnote" placeholder="Brief Note: Any additional notes required can be specified here in detail." class="specialinstruction"></textarea>
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <h5 class="advance_writing_info">Advance Writing Information</h5>
+                        </div>
+
+                        <div class="col-md-4 advance_writing_info_list">
+                            <div class="form-group">
+                                <label for="word">Choose Writing</label>
+                                <select name="choose_writing" class="choose_writing" id="choose_writing">
+
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 advance_writing_info_list">
+                            <div class="form-group">
+                                <label for="word">Writing Style</label>
+                                <select name="writing_style" class="writing_style" id="writing_style">
+
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 advance_writing_info_list">
+                            <div class="form-group">
+                                <label for="word">Preferred Voice</label>
+                                <select name="prefered_voice" class="prefered_voice" id="prefered_voice">
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                   
+            </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.1/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
@@ -790,6 +939,158 @@
                     }
                 });
             }
+        });
+
+        $('body').on('click', '.info_msg_show_data_occupy', function() {
+            toastr.info("Please clear the selected data type before proceeding.");
+        });
+
+        var price_word = parseInt($("select[name='word_count']").find(':selected').attr('data-price')) || 0;
+        var languageNotEnglish = false;
+
+        $('body').on('change', '.word_count, select[name="prefered_language"]', function() {
+            var selectedLanguage = $('select[name=prefered_language]').find(':selected').val();
+            var selectedWordCount = $('select[name=word_count]').find(':selected').val();
+            
+            if (selectedLanguage && selectedLanguage !== "English") {
+                price_word = parseInt($("select[name='word_count']").find(':selected').attr('data-non-english-price')) || 0;
+                languageNotEnglish = true;
+            } else if (selectedLanguage === "English") {
+                price_word = parseInt($("select[name='word_count']").find(':selected').attr('data-price')) || 0;
+                languageNotEnglish = false;
+            }
+
+            var provied_price = parseInt($('#hire_content_price').attr('data-price')) || 0;
+            var totalPrice = price_word + provied_price;
+
+            if (price_word > 0 && selectedWordCount != '') { 
+                $('.expert_price_list').css('display', 'block');
+            } else {
+                $('.expert_price_list').css('display', 'none');
+            }
+
+            $('.expert_price').text('$' + price_word);
+            if (selectedWordCount != undefined && selectedWordCount != '' && selectedLanguage != '' && selectedLanguage != undefined) {
+                $('#hire_content_price').text('$' + totalPrice);
+            }
+        });
+
+        $('body').on('click', '.hire_content', function() {
+
+            $('#hire_content_detail')[0].reset();
+            $('#hire_content_price').text('');
+            $('#hire_content_price').attr('data-price', '');
+            $('#hire_content_website_id').val('');
+            $('#hire_content_quantity').val('');
+            $('#hire_content_marketplace_type').val('');
+            $('#hire_content_cart_id').val('');
+
+            var cart_id = $(this).attr('data-id');
+            var price = $(this).attr('data-price');
+            var quantity = $(this).attr('data-quantity');
+            var marketplace_type = $(this).attr('data-matketplace');
+            var website_id = $(this).attr('data-web');
+            var publishPrice = $(this).attr('data-publishprice');
+            var showQuantity = $('#cart_backlink_no_' + cart_id).text();
+
+            $('#hire_content_price').text('$' + price);
+            $('#hire_content_price').attr('data-price', publishPrice);
+            $('#hire_content_website_id').val(website_id);
+            $('#hire_content_quantity').val(quantity);
+            $('#hire_content_marketplace_type').val(marketplace_type);
+            $('#hire_content_cart_id').val(cart_id);
+            $('#hire_content').modal('show');
+
+            if (languageNotEnglish == false) {
+                var price = $(this).attr('data-price');
+            } else {
+                var price = $(this).attr('data-non-english-price')
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: "/api/cart/hire-cart-data-detail",
+                data: {
+                    'cart_id': cart_id,
+                    'type': 'hire_content',
+                    "_token": "{{ csrf_token() }}"
+                },
+                dataType: 'json',
+                success: function(data) {
+                    $('#hire_content_detail_data').html(data.cartListHtml);
+                    languageListOfHireContentWriter = data.languageList;
+
+                    if (languageListOfHireContentWriter.length === 1) {
+                        window.setTimeout(function () {
+                            $('#select2-prefered_language-container').siblings('.select2-selection__arrow').css('display', 'none');
+                        }, 200);
+                    } else {
+                        window.setTimeout(function () {
+                            $('#select2-prefered_language-container').siblings('.select2-selection__arrow').css('display', 'block');
+                        }, 200);
+                    }
+
+                    if(languageListOfHireContentWriter.length !== 1){
+                        if(data.cartDetails.language == null || data.cartDetails.language == ''){
+                            var $preferedLanguage = $('#prefered_language');
+                            $preferedLanguage.prepend('<option value="" selected>Select Language</option>');
+                        }
+                    }
+
+                    var dynamicInputCounter = $('.anchor_text_added').length;
+                    var dynamicInputCounterfordata = dynamicInputCounter++;
+
+                    $('#anchor_text_' + dynamicInputCounterfordata).rules("add", {
+                        required: true,
+                        messages: {
+                            required: 'The anchor text field is required',
+                        }
+                    });
+
+                    $('#target_url_' + dynamicInputCounterfordata).rules("add", {
+                        required: true,
+                        url: true,
+                        messages: {
+                            required: 'The landing page URL field is required',
+                            url: 'Please enter a valid landing page URL'
+                        }
+                    });
+                
+                    $('#hire_backlink').text(showQuantity + ':');
+
+                    $("#category").select2({
+                        dropdownParent: $('#hire_content .modal-content')
+                    });
+
+                    $("#prefered_language").select2({
+                        minimumResultsForSearch: -1,
+                        dropdownParent: $('#hire_content .modal-content')
+                    });
+
+                    $("#target_audience").select2({
+                        dropdownParent: $('#hire_content .modal-content')
+                    });
+
+                    $("#word_count").select2({
+                        minimumResultsForSearch: -1,
+                        dropdownParent: $('#hire_content .modal-content')
+                    });
+
+                    $("#choose_writing").select2({
+                        minimumResultsForSearch: -1,
+                        dropdownParent: $('#hire_content .modal-content')
+                    });
+                    $("#writing_style").select2({
+                        minimumResultsForSearch: -1,
+                        dropdownParent: $('#hire_content .modal-content')
+                    });
+                    
+                    $("#prefered_voice").select2({
+                        minimumResultsForSearch: -1,
+                        dropdownParent: $('#hire_content .modal-content')
+                    });
+                }
+            });
         });
     });
 </script>
