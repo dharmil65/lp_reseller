@@ -22,13 +22,17 @@ class ResellerPanelAPIController extends Controller
 
             $orders = DB::connection('lp_own_db')
                 ->table('order_attributes')
+                ->join('websites', 'websites.id', 'order_attributes.website_id')
                 ->where('reseller_id', $reseller_id)
-                ->select('created_at', 'order_lable', 'reseller_order_lable', 'website_id', 'content_writter', 'Preferred_language', 'due_date', 'due_time', 'status', 'price', 'total')
-                ->orderBy('id', 'desc');
+                ->select('order_attributes.created_at', 'order_attributes.order_lable', 'order_attributes.reseller_order_lable', 'order_attributes.website_id', 'order_attributes.content_writter', 'order_attributes.Preferred_language', 'order_attributes.due_date', 'order_attributes.due_time', 'order_attributes.status', 'order_attributes.price', 'order_attributes.total', 'order_attributes.id as order_attr_id', 'websites.publisher_id', 'websites.website_url', 'websites.host_url')
+                ->orderBy('order_attributes.id', 'desc');
 
             if ($request->has('status') && $request->status !== 'all') {
-                $orders->where('status', $request->status);
+                $orders->where('order_attributes.status', $request->status);
             }
+
+            $fetchResellerEmail = DB::connection('lp_own_db')->table('resellers')->where('id', $reseller_id)->value('email');
+            $fetchUserID = DB::connection('lp_own_db')->table('users')->where('email', $fetchResellerEmail)->value('id');
 
             return DataTables::of($orders)
                 ->editColumn('created_at', function ($order) {
@@ -38,16 +42,9 @@ class ResellerPanelAPIController extends Controller
                     return $order->total ? '$' . number_format($order->total, 0) : '--';
                 })
                 ->editColumn('website_id', function ($order) {
-                    $host_url = DB::connection('lp_own_db')
-                        ->table('websites')
-                        ->where('id', $order->website_id)
-                        ->value('host_url');
-                    if ($host_url) {
-                        $host_url = trim($host_url);
-                        $protocol = (str_starts_with($host_url, 'http://') || str_starts_with($host_url, 'https://')) ? '' : 'https://';
-                        return '<a href="' . $protocol . $host_url . '" target="_blank">' . $host_url . '</a>';
-                    }
-                    return '-';
+                    $host_url = trim($order->host_url);
+                    $protocol = (str_starts_with($host_url, 'http://') || str_starts_with($host_url, 'https://')) ? '' : 'https://';
+                    return '<a href="' . $protocol . $host_url . '" target="_blank">' . $host_url . '</a>';
                 })
                 ->editColumn('content_writter', function ($order) {
                     $content_map = [
@@ -68,7 +65,17 @@ class ResellerPanelAPIController extends Controller
                     ];
                     return $statusLabels[$order->status] ?? '--';
                 })
-                ->rawColumns(['website_id'])
+                ->addColumn('chat', function ($order) use($fetchUserID) {
+                    return '<a href="javascript:void(0);" class="chat-icon" 
+                        data-userid="' . $fetchUserID . '" 
+                        data-orderlabel="' . $order->order_lable . '" 
+                        data-publisher="' . $order->publisher_id . '" 
+                        data-oaid="' . $order->order_attr_id . '" 
+                        data-status="1">
+                        <img src="' . asset('assets/images/comment-icon.png') . '" alt="chat">
+                        </a>';
+                })
+                ->rawColumns(['website_id', 'chat'])
                 ->toJson();
 
         } catch (\Exception $e) {

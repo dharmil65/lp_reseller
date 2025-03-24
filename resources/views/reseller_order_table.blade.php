@@ -58,6 +58,7 @@
                 <th>Due Time</th>
                 <th id="statusColumn">Status</th>
                 <th>Price</th>
+                <th class="comments">Chat</th>
             </tr>
         </thead>
     </table>
@@ -86,7 +87,8 @@
                 { data: 'due_date', name: 'due_date' },
                 { data: 'due_time', name: 'due_time' },
                 { data: 'status', name: 'status', visible: false },
-                { data: 'total', name: 'price' }
+                { data: 'total', name: 'price' },
+                { data: 'chat', name: 'chat' }
             ],
             order: [[0, 'desc']]
         });
