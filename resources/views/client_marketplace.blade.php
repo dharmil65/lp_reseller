@@ -1674,7 +1674,9 @@
                         d.search = $('#marketplace_search').val();
                         d.marketplaceType = 0;
                         d.page_per_size = 25;
-                        d.page = 1;
+                        d.page = (d.start / d.length) + 1;
+                        d.orderBy = d.columns[d.order[0].column].data;
+                        d.orderDir = d.order[0].dir;
                     },
                     beforeSend: function () {
                         cartStatus = {};
@@ -1720,6 +1722,7 @@
                 columns: [
                     {
                         data: "host_url",
+                        className: "website",
                         render: function (data, type, row) {
                             let formattedUrl = data && !data.startsWith('http') ? 'https://' + data : data;
                             let hostUrl = data ? `<a href="${formattedUrl}" target="_blank"><strong>${data}</strong></a>` : '--';
@@ -1738,8 +1741,8 @@
                             }
 
                             return `
-                                <div class="website">${hostUrl}</div>
-                                <div>Category: ${categoryHtml}</div>
+                                <div>${hostUrl}</div>
+                                <p>Category: ${categoryHtml}</p>
                             `;
                         }
                     },

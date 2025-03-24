@@ -1349,3 +1349,16 @@ form .signup-link a:hover {
 .navbar .navbar_btns h5 {
     margin: 0;
 }
+
+.marketplace-table td .wishlist-btn,
+.marketplace-table td .cart_btn {
+    padding: 0 20px;
+}
+
+.table-detail td .btn-primary.cart_btn.active,
+.table-detail td .btn-primary.cart_btn:active{
+	background: #60CB8B !important;
+	color: #fff !important;
+	border-color: #60CB8B !important; 
+    box-shadow: 0px 1px 0px 0px #40BC72 inset, 0px -1px 0px 1px #40BC72 inset, -2px 0px 0px 0px #FFFFFF33 inset, 2px 0px 0px 0px #FFFFFF33 inset, 0px 2px 0px 0px #FFFFFF33 inset;
+}

@@ -64,9 +64,15 @@ class MarketplaceAPIController extends Controller
         $offset = ($page - 1) * $pagePerSize;
         $search = $request->input('search');
         $orderBy = $request->input('orderBy', 'id');
-        $orderDir = $request->input('orderDir', 'asc');
+        $orderDir = $request->input('orderDir', 'desc');
 
         $query = DB::connection('lp_own_db')->table('advertiser_marketplace');
+
+        if (in_array($orderBy, ['ahref', 'semrush'])) {
+            $query = $query->orderBy(DB::raw("CAST($orderBy AS UNSIGNED)"), $orderDir);
+        } else {
+            $query = $query->orderBy($orderBy, $orderDir);
+        }
 
         if ($marketplaceType == 1) {
             $query->whereNotNull('forbiddencategories')
