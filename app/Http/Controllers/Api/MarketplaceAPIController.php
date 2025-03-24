@@ -641,7 +641,7 @@ class MarketplaceAPIController extends Controller
 
     private function generateResellerOrderLable()
     {
-        $lastOrder = DB::connection('lp_own_db')->table('order_attributes')->select("reseller_order_lable")->orderBy('id', 'DESC')->first();
+        $lastOrder = DB::connection('lp_own_db')->table('order_attributes')->whereNotNull('reseller_order_lable')->select("reseller_order_lable")->orderBy('id', 'DESC')->first();
 
         if ($lastOrder && isset($lastOrder->reseller_order_lable)) {
             $lastNumber = (int) filter_var($lastOrder->reseller_order_lable, FILTER_SANITIZE_NUMBER_INT);
