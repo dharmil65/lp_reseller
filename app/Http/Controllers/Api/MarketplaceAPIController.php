@@ -91,6 +91,13 @@ class MarketplaceAPIController extends Controller
         }
 
         $websiteData = $query->distinct()->skip($offset)->take($pagePerSize)->get();
+
+        $websiteData->transform(function ($item) {
+            $item->ahref = $this->formatNumber($item->ahref);
+            $item->semrush = $this->formatNumber($item->semrush);
+            return $item;
+        });
+        
         $totalPages = ceil($totalWebsiteData / $pagePerSize);
 
         return response()->json([
@@ -104,6 +111,21 @@ class MarketplaceAPIController extends Controller
             'data' => $websiteData,
             'message' => $websiteData->isEmpty() ? 'No data found' : '',
         ], $websiteData->isEmpty() ? 404 : 200);
+    }
+
+    private function formatNumber($val)
+    {
+        if ($val >= 1E12) {
+            return round($val / 1E12, 1) . 'T';
+        } elseif ($val >= 1E9) {
+            return round($val / 1E9, 1) . 'B';
+        } elseif ($val >= 1E6) {
+            return round($val / 1E6, 1) . 'M';
+        } elseif ($val >= 1E3) {
+            return round($val / 1E3, 1) . 'K';
+        } else {
+            return (string) $val;
+        }
     }
 
     public function cartStore(Request $request)
