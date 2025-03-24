@@ -242,8 +242,8 @@
         <nav class="main-navigation">
             <ul>
                 <li><a href="#" class="">Dashboard</a></li>
-                <li><a href="{{ route('client_marketplace') }}" class="active">Marketplace</a></li>
-                <li><a href="{{ route('client_orders') }}" class="">My Orders</a></li>
+                <li><a href="{{ route('marketplace') }}" class="active">Marketplace</a></li>
+                <li><a href="{{ route('orders') }}" class="">My Orders</a></li>
             </ul>
         </nav>
         <div class="menu-icon icon-menu">
@@ -313,6 +313,49 @@
 $(document).ready(function () {
     let token = localStorage.getItem("api_token");
     if (!token) window.location.href = "{{ route('logout') }}";
+
+    setTimeout(function () {
+        let newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+    }, 2000);
+    
+    $(document).on("contextmenu", function (e) {
+        e.preventDefault();
+    });
+
+    $('#marketplace_search').css({
+        'user-select': 'auto'
+    });
+
+    $(document).on("keydown", function (e) {
+        let isSearchBox = $(e.target).attr('id') === 'marketplace_search';
+
+        let blockedKeys = ["u", "s", "i", "F12"];
+        let clipboardKeys = ["c", "x", "a", "v"];
+
+        if (e.ctrlKey && blockedKeys.includes(e.key.toLowerCase()) || 
+            e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "i" || 
+            e.metaKey && e.altKey && e.key.toLowerCase() === "j") {
+            e.preventDefault();
+        }
+
+        if (e.ctrlKey && clipboardKeys.includes(e.key.toLowerCase()) && !isSearchBox) {
+            e.preventDefault();
+        }
+    });
+
+    $('input, textarea').on('copy paste cut', function (e) {
+        if ($(this).attr('id') !== 'marketplace_search') {
+            e.preventDefault();
+        }
+    });
+
+    $('body').css({
+        'user-select': 'none',
+        '-moz-user-select': 'none',
+        '-webkit-user-select': 'none',
+        '-ms-user-select': 'none'
+    });
 
     $('#marketplaceTable').DataTable({
         serverSide: true,

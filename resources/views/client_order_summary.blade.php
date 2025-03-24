@@ -216,14 +216,14 @@
             <nav class="main-navigation">
                 <ul>
                     <li><a href="#" class="">Dashboard</a></li>
-                    <li><a href="{{ route('client_marketplace') }}" class="active">Marketplace</a></li>
-                    <li><a href="" class="{{ route('client_orders') }}">My Orders</a></li>
+                    <li><a href="{{ route('marketplace') }}" class="active">Marketplace</a></li>
+                    <li><a href="" class="{{ route('orders') }}">My Orders</a></li>
                 </ul>
             </nav>
             <div class="menu-icon icon-menu">
                 <ul class="menu-icon-detail">
                     <li><a  id="wishlist_btn"><img src="{{asset('assets/images/heart.png')}}" alt="heart"><span class="notification-number d-none" loading="lazy" id="wishlistcount"></span></a></li>
-                    <li><a id="cart_btn_header"><img src="{{ asset('assets/images/buy.png') }}" alt="buy"><span class="notification-number {{ isset($cartsTotal) && $cartsTotal > 0 ? '' : 'd-none' }}" loading="lazy" id="cartcount">{{ isset($cartsTotal) && $cartsTotal > 0 ? $cartsTotal : '' }}</span></a></li>
+                    <li><a id="cart_btn_header"><img src="{{ asset('assets/images/buy.png') }}" alt="buy"><span class="notification-number {{ isset($cartTotal) && $cartTotal > 0 ? '' : 'd-none' }}" loading="lazy" id="cartcount">{{ isset($cartTotal) && $cartTotal > 0 ? $cartTotal : '' }}</span></a></li>
                     <li class="profile-wrapper dropdown">
                         <a class="dropdown-toggle" href="#" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="" alt="profile" loading="lazy"></a>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -467,7 +467,7 @@
                     data: { end_client_id: endClientId },
                     dataType: "json",
                     success: function (response) {
-                        let redirectUrl = "{{ route('client_marketplace') }}?end_client_id=" + endClientId;
+                        let redirectUrl = "{{ route('marketplace') }}?end_client_id=" + endClientId;
                         window.location.href = redirectUrl;
                     }
                 });

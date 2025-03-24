@@ -60,7 +60,7 @@ class LoginAPIController extends Controller
                         'email' => $resellerUser->email,
                         'token' => $token,
                     ],
-                    'redirect_url' => route('client_marketplace')
+                    'redirect_url' => route('marketplace')
                 ]);
             }
 

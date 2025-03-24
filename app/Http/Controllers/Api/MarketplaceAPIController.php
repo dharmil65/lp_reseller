@@ -416,8 +416,13 @@ class MarketplaceAPIController extends Controller
         $subtotal -= $totalExpertPrice;
         $balance = DB::connection('lp_own_db')->table('wallets')->where('end_client_id', $id)->where('status', 'complete')->orderBy('id', 'desc')->pluck('total')->first();
 
+        $cartTotal = DB::table('carts')
+            ->where('advertiser_id', $id)
+            ->where('status', 0)
+            ->count();
+
         if (count($orderSummaryData) > 0) {
-            return view('client_order_summary', compact('pagetitle', 'orderSummaryData', 'total', 'subtotal', 'balance'));
+            return view('client_order_summary', compact('pagetitle', 'orderSummaryData', 'total', 'subtotal', 'balance', 'cartTotal'));
         } else {
             return redirect()->back();
         }

@@ -64,7 +64,7 @@
                             </div>
                         </form>
                         <div class="form-group">
-                            <p class="sign-note">Don’t have an account? <a href="{{ route('register-client-form') }}">Sign up for free</a></p>
+                            <p class="sign-note">Don’t have an account? <a href="{{ route('register') }}">Sign up for free</a></p>
                         </div>
                     </div>
                     <div class="client-review-wrapper">

@@ -18,15 +18,15 @@ use App\Http\Controllers\ResellerPanelController;
 */
 
 Route::get('/', function () {
-    return redirect()->route('register-client-form');
+    return redirect()->route('register');
 });
 
-Route::get('register-client', [RegisterController::class, 'showClientRegisterForm'])
-    ->name('register-client-form');
+Route::get('register', [RegisterController::class, 'showClientRegisterForm'])
+    ->name('register');
 
-Route::get('login-client', [LoginController::class, 'showLoginForm'])->name('login-client');
+Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 
-Route::get('/client_marketplace', [MarketplaceController::class, 'marketplaceView'])->name('client_marketplace');
+Route::get('/marketplace', [MarketplaceController::class, 'marketplaceView'])->name('marketplace');
 
 Route::get('/logout', [MarketplaceController::class, 'logout'])->name('logout');
 
@@ -34,6 +34,6 @@ Route::get('/cart', [MarketplaceController::class, 'cartDetailPageView'])->name(
 
 Route::get('reseller-home', [LoginController::class, 'resellerHomepage'])->name('reseller-home');
 
-Route::get('client_orders', [MarketplaceController::class, 'clientOrdersView'])->name('client_orders');
+Route::get('orders', [MarketplaceController::class, 'clientOrdersView'])->name('orders');
 
 Route::get('reseller_orders', [ResellerPanelController::class, 'resellerOrdersView'])->name('reseller_orders');

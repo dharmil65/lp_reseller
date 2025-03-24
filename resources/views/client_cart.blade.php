@@ -218,8 +218,8 @@
             <nav class="main-navigation">
                 <ul>
                     <li><a href="#" class="">Dashboard</a></li>
-                    <li><a href="{{ route('client_marketplace') }}" class="active">Marketplace</a></li>
-                    <li><a href="{{ route('client_orders') }}" class="">My Orders</a></li>
+                    <li><a href="{{ route('marketplace') }}" class="active">Marketplace</a></li>
+                    <li><a href="{{ route('orders') }}" class="">My Orders</a></li>
                 </ul>
             </nav>
             <div class="menu-icon icon-menu">
@@ -532,6 +532,9 @@
         if (urlParams.has('walletBalance') && urlParams.has('cartTotal')) {
             localStorage.setItem('walletBalance', urlParams.get('walletBalance'));
             localStorage.setItem('cartTotal', urlParams.get('cartTotal'));
+        }
+
+        if (urlParams.has('userid')) {
             localStorage.setItem('userid', urlParams.get('userid'));
         }
 

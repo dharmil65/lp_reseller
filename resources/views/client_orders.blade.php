@@ -26,8 +26,8 @@
 			<nav class="main-navigation">
 				<ul>
 					<li><a href="#" class="">Dashboard</a></li>
-					<li><a href="{{ route('client_marketplace') }}" class="">Marketplace</a></li>
-					<li><a href="{{ route('client_orders') }}" class="active">My Orders</a></li>
+					<li><a href="{{ route('marketplace') }}" class="">Marketplace</a></li>
+					<li><a href="{{ route('orders') }}" class="active">My Orders</a></li>
 				</ul>
 			</nav>
 			<div class="menu-icon icon-menu">

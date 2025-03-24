@@ -32,11 +32,11 @@ class RegisterAPIController extends Controller
 
             $checkIfReseller = DB::connection('lp_own_db')->table('resellers')->where('email', $request->email)->exists();
             if ($checkIfReseller) {
-                return response()->json(['success' => false, 'message' => 'Email already registered as a reseller. Please login.', 'redirect_url' => route('login-client')], 409);
+                return response()->json(['success' => false, 'message' => 'Email already registered as a reseller. Please login.', 'redirect_url' => route('login')], 409);
             }
 
             if (DB::table('reseller_users')->where('email', $request->email)->exists()) {
-                return response()->json(['success' => false, 'message' => 'Email already registered. Please login.', 'redirect_url' => route('login-client')]);
+                return response()->json(['success' => false, 'message' => 'Email already registered. Please login.', 'redirect_url' => route('login')]);
             }
 
             $resellerData = [
@@ -103,7 +103,7 @@ class RegisterAPIController extends Controller
                     'updated_at' => now()
                 ]);
 
-                return response()->json(['success' => true, 'message' => 'Registration successful!', 'redirect_url' => route('login-client')]);
+                return response()->json(['success' => true, 'message' => 'Registration successful!', 'redirect_url' => route('login')]);
             } catch (Exception $e) {
                 \Log::error(['error while adding wallet transaction' => $e->getMessage()]);
                 return response()->json(['error' => 'Wallet transaction failed.'], 500);

@@ -96,7 +96,7 @@
                         </form>
                         <div class="for-new-user form-group">
                             <div class="sign-note">
-                                <p>Already have an account? <a href="{{ route('login-client') }}">Log in</a></p>
+                                <p>Already have an account? <a href="{{ route('login') }}">Log in</a></p>
                             </div>
                         </div>
                     </div>
