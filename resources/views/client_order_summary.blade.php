@@ -469,6 +469,12 @@
                     success: function (response) {
                         let redirectUrl = "{{ route('marketplace') }}?end_client_id=" + endClientId;
                         window.location.href = redirectUrl;
+                    },
+                    error: function(xhr, status, error) {
+                        setTimeout(function() {
+                            window.location.href = xhr.responseJSON.redirect_url;
+                        }, 500);
+                        return false;
                     }
                 });
             });

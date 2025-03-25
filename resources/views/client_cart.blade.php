@@ -175,10 +175,6 @@
             display: block;
         }
 
-        .invalid {
-            border: 2px solid red !important;
-        }
-
         label.error {
             color: red;
             font-size: 14px;
@@ -777,6 +773,12 @@
                     $('#information_modal_body').html(data.websiteinfo);
                     $('#cart-details-list').html(data.html);
                     $('#guidelines_item').html(data.guideline);
+                },
+                error: function(xhr, status, error) {
+                    setTimeout(function() {
+                        window.location.href = xhr.responseJSON.redirect_url;
+                    }, 500);
+                    return false;
                 }
             });
         });
@@ -822,6 +824,12 @@
                         dropdownParent: $('.provide-content-modal .modal-content'),
                         minimumResultsForSearch: -1
                     });
+                },
+                error: function(xhr, status, error) {
+                    setTimeout(function() {
+                        window.location.href = xhr.responseJSON.redirect_url;
+                    }, 500);
+                    return false;
                 }
             });
         });
@@ -925,7 +933,6 @@
                 formData.append('_token', '{{ csrf_token() }}');
                 formData.append('type', 'provide_content');
                 formData.append('end_client_id', end_client_id);
-                console.log(formData);
 
                 $.ajax({
                     type: 'POST',
@@ -936,6 +943,12 @@
                     success: function(data) {
                         $('#provide-content').modal('hide');
                         toastr.success('Backlink details added successfully');
+                    },
+                    error: function(xhr, status, error) {
+                        setTimeout(function() {
+                            window.location.href = xhr.responseJSON.redirect_url;
+                        }, 500);
+                        return false;
                     }
                 });
             }
@@ -972,6 +985,8 @@
             $('.expert_price').text('$' + price_word);
             if (selectedWordCount != undefined && selectedWordCount != '' && selectedLanguage != '' && selectedLanguage != undefined) {
                 $('#hire_content_price').text('$' + totalPrice);
+            } else {
+                $('#hire_content_price').text('$' + provied_price);
             }
         });
 
@@ -1084,13 +1099,202 @@
                         minimumResultsForSearch: -1,
                         dropdownParent: $('#hire_content .modal-content')
                     });
-                    
+
                     $("#prefered_voice").select2({
                         minimumResultsForSearch: -1,
                         dropdownParent: $('#hire_content .modal-content')
                     });
+                },
+                error: function(xhr, status, error) {
+                    setTimeout(function() {
+                        window.location.href = xhr.responseJSON.redirect_url;
+                    }, 500);
+                    return false;
                 }
             });
+        });
+
+
+        $(document).on('change', 'select', function() {
+            $(this).valid();
+        });
+
+        var dynamicInputCounterfordata = 1;
+
+        $('#hire_content_detail').validate({
+            errorClass: 'invalid',
+            validClass: 'valid',
+            highlight: function(element, errorClass, validClass) {
+                $(element).addClass(errorClass).removeClass(validClass);
+            },
+            unhighlight: function(element, errorClass, validClass) {
+                $(element).removeClass(errorClass).addClass(validClass);
+            },
+            rules: {
+                keywords: {
+                    required: true,
+                    normalizer: function(value) {
+                        return $.trim(value);
+                    }
+                },
+                targeturl: {
+                    required: true,
+                    url: true,
+                    normalizer: function(value) {
+                        return $.trim(value);
+                    }
+                },
+                referencelink: {
+                    required: true,
+                    url: true,
+                    normalizer: function(value) {
+                        return $.trim(value);
+                    }
+                },
+                anchortext: {
+                    required: true,
+                    normalizer: function(value) {
+                        return $.trim(value);
+                    },
+                    maxlength: 100,
+                },
+                word_count: {
+                    required: true,
+                },
+                category: {
+                    required: true,
+                },
+                prefered_language: {
+                    required: function () {
+                        return languageListOfHireContentWriter.length > 1;
+                    }
+                },
+                target_audience: {
+                    required: true,
+                },
+                briefnote: {
+                    noteValidation: true,
+                    maxlength: 400,
+                }
+            },
+            messages: {
+                keywords: {
+                    required: 'The keywords field is required',
+                },
+                targeturl: {
+                    required: 'The landing page url field is required',
+                    url: 'Please enter valid landing page url'
+                },
+                referencelink: {
+                    required: 'The reference link field is required',
+                    url: 'Please enter valid reference link'
+                },
+                anchortext: {
+                    required: 'The anchor text field is required',
+                },
+                word_count: {
+                    required: 'The word count field is required',
+                },
+                category: {
+                    required: 'The category field is required'
+                },
+                prefered_language: {
+                    required: 'The language field is required'
+                },
+                target_audience: {
+                    required: 'The target audience field is required'
+                }
+            },
+            submitHandler: function(form) {
+                var website_id = $('#hire_content_website_id').val();
+                var dynamicFields = {};
+                var count = 1;
+                var end_client_id = $('#user_id').val();
+
+                $('.anchor_text_added').each(function(index, element) {
+                    dynamicFields['anchor_text_' + count] = $(element).val();
+                    dynamicFields['target_url_' + count] = $(element).closest('.row').find('input[name^="target_url"]').val();
+                    count++;
+                });
+
+                var prefVal = $('#prefered_language').val();
+
+                if (languageListOfHireContentWriter.length === 1) {
+                   prefVal =  languageListOfHireContentWriter[0];
+                } else {
+                    prefVal =  $('#prefered_language').val();   
+                }
+
+                if(prefVal !== "English"){
+                    languageNotEnglish = true;
+                }
+
+                if (languageNotEnglish == true) {
+                    var expert_price = $("select[name='word_count']").find(':selected').attr('data-non-english-price');
+                } else {
+                    var expert_price = $("select[name='word_count']").find(':selected').attr('data-price');
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: "/api/cart/add-quantity",
+                    data: {
+                        'website_id': website_id,
+                        'words': $('#word_count').val(),
+                        'titlesuggestion': $('#titlesuggestion').val(),
+                        'categoryid': $('#category').val(),
+                        'keywords': $('#keywords').val(),
+                        'targeturl': $('#targeturl').val(),
+                        'referencelink': $('#referencelink').val(),
+                        'anchortext': $('#anchortext').val(),
+                        'target_audience': $('#target_audience').val(),
+                        'prefered_language':  prefVal,
+                        'choose_writing': $('#choose_writing').val(),
+                        'prefered_voice': $('#prefered_voice').val(),
+                        'writing_style': $('#writing_style').val(),
+                        'expert_price_id': $('#expert_price_id').val(),
+                        'quantity': $('#hire_content_quantity').val(),
+                        'type': 'hire_content',
+                        'marketplace_type': $('#hire_content_marketplace_type').val(),
+                        'briefnote': $('#briefnote').val(),
+                        'expert_price_id': $("select[name='word_count']").find(':selected').attr('data-id'),
+                        'expert_price': expert_price,
+                        'languageNotEnglish': languageNotEnglish,
+                        "_token": "{{ csrf_token() }}",
+                        'dynamicFields': dynamicFields,
+                        'end_client_id': end_client_id
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#hire_content').modal('hide');
+
+                        var submitedCount = $('.cart-backlink-title .cart-dott-fill').length;
+                        if (submitedCount == 4) {
+                            var active_no = $('.cart_list_data.active').attr('data-list-no');
+                            var curentActive = $('.cart_list_data.active').attr('data-web-id');
+
+                            var active_websiteno = parseInt(active_no) + 1;
+                            var website_active = $('label.cart_list_number_' + active_websiteno).attr('data-web-id');
+                            if (website_active == undefined && website_active) {
+                                var active_websiteno = active_no - 1;
+                                var website_active = $('label.cart_list_number_' + active_websiteno).attr('data-web-id');
+                                
+                            }
+                            cartListRefresh(website_active);
+                        } else {
+                            cartListRefresh(website_id);
+                        }
+
+                        toastr.info('Backlink details added successfully');
+                    },
+                    error: function(xhr, status, error) {
+                        setTimeout(function() {
+                            window.location.href = xhr.responseJSON.redirect_url;
+                        }, 500);
+                        return false;
+                    }
+                });
+            }
         });
     });
 </script>

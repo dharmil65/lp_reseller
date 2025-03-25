@@ -103,7 +103,7 @@ class MarketplaceAPIController extends Controller
             $item->semrush = $this->formatNumber($item->semrush);
             return $item;
         });
-        
+
         $totalPages = ceil($totalWebsiteData / $pagePerSize);
 
         return response()->json([
@@ -231,6 +231,11 @@ class MarketplaceAPIController extends Controller
         }
 
         $user = DB::table('reseller_users')->where('remember_token', $token)->first();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
         $id = $user->id ?? null;
         $cartTotal = DB::table('carts')->where('advertiser_id', $id)->where('status', 0)->count();
         $walletBalance = DB::connection('lp_own_db')->table('wallets')->where('end_client_id', $id)->where('status', 'complete')->orderBy('id', 'desc')->pluck('total')->first();
@@ -242,16 +247,25 @@ class MarketplaceAPIController extends Controller
     {
         $id = $request->endClientId ?? null;
         $cartDetails = DB::table('carts')->where('advertiser_id',  $id)->where('marketplace_type', $request->marketplace_type)->where('website_id', $request->website_id)->orderby('quantity_no', 'ASC')->get();
+
+        if (!$cartDetails || count($cartDetails) == 0) {
+            return response()->json(['error' => 'Unauthorized', 'redirect_url' => route('marketplace')], 401);
+        }
+
         $websiteDetail = DB::connection('lp_own_db')->table('advertiser_marketplace')->where('website_id', $request->website_id);
-        if($request->marketplace_type == 0){
+        
+        if ($request->marketplace_type == 0) {
             $websiteDetail->whereNotNull('category');
         }else{
             $websiteDetail->whereNotNull('forbiddencategories');
         }
+        
         $websiteDetail = $websiteDetail->first();
         $cartPriceCollection = $cartDetails->pluck('price');
         $cartPrice = $cartPriceCollection->filter()->isNotEmpty() ? $cartPriceCollection : null;
+       
         $usersDetail = DB::connection('lp_own_db')->table('websites')->join('users', 'websites.publisher_id', 'users.id')->where('websites.id', $request->website_id)->select('users.id', 'users.deleted_at as userDeleted', 'users.vacation_mode', 'websites.deleted_at', 'users.is_active')->first();
+
         $returnHTML = view('cart_details', compact('cartDetails', 'usersDetail', 'websiteDetail', 'cartPrice'))->render();
         $guideline = $websiteDetail->guidelines;
         return response()->json(array('success' => true, 'html' => $returnHTML, 'message' => 'cart details', 'guideline' => $guideline));
@@ -260,6 +274,11 @@ class MarketplaceAPIController extends Controller
     public function provideCartDataEndClient(Request $request)
     {
         $cartDetails =  DB::table('carts')->where('id', $request->cart_id)->first();
+
+        if (!$cartDetails || empty($cartDetails)) {
+            return response()->json(['error' => 'Unauthorized', 'redirect_url' => route('marketplace')], 401);
+        }
+
         if ($request->type == 'provide_content') {
             $languageData = DB::connection('lp_own_db')->table('websites')->where('id', $cartDetails->website_id)->select('language')->first();
             $languageList = explode(',', $languageData->language);
@@ -271,29 +290,49 @@ class MarketplaceAPIController extends Controller
     public function addQuantityDataEndClient(Request $request){
         $id = $request->end_client_id ?? null;
 
-        if($request->type == "provide_content"){
+        if (!$id) {
+            return response()->json(['error' => 'Unauthorized', 'redirect_url' => route('marketplace')], 401);
+        }
+
+        if ($request->type == "provide_content"){
             $validator = Validator::make($request->all(), [
             ]);
+        } else if($request->type == "hire_content") {
+            $validator = Validator::make($request->all(), [
+                "words"=>'required',
+                "categoryid"=>'required',
+                "keywords"=>'required',
+                "targeturl"=>'required',
+                "anchortext"=>'required',
+                "prefered_language"=>'required',
+                "target_audience"=>'required'
+            ]);
         }
+
         if ($validator->fails()) {
             array_push($cart_error, $validator->messages());
-        }else{
-            $website = DB::connection('lp_own_db')->table('websites')->where('id', $request->provide_content_website_id)->first();
+        } else {
+            $website_id = isset($request->provide_content_website_id) ? $request->provide_content_website_id : $request->website_id;
+            $marketplace_type = isset($request->provide_content_marketplace_type) ? $request->provide_content_marketplace_type : $request->marketplace_type;
+            $quantity = isset($request->provide_content_quantity) ? $request->provide_content_quantity : $request->quantity;
+            $website = DB::connection('lp_own_db')->table('websites')->where('id', $website_id)->first();
 
-            $cartData = DB::table('carts')->select('*')->where('website_id', $request->provide_content_website_id)
-                ->where('advertiser_id', $id)->where('quantity_no', $request->provide_content_quantity)
-                ->where('marketplace_type', $request->provide_content_marketplace_type)
+            $cartData = DB::table('carts')->select('*')->where('website_id', $website_id)
+                ->where('advertiser_id', $id)->where('quantity_no', $quantity)
+                ->where('marketplace_type', $marketplace_type)
                 ->get();
 
-            $guestPostPrice=$website->publishing_price;
-            $linkInsertionPrice=$website->linkinsertion_price;
-            $marketplace_type=(isset($website->category_type) && $website->category_type == null) ? '0' : $website->category_type;
+            $guestPostPrice = $website->publishing_price;
+            $linkInsertionPrice = $website->linkinsertion_price;
+            $marketplace_type = (isset($website->category_type) && $website->category_type == null) ? '0' : $website->category_type;
               
-            if($website->marketplace_guest_post_price == null || $website->marketplace_guest_post_price != null) {
-                if($website->guest_post_commission_price!=null && $website->guest_post_value_addition == null) {
+            if ($website->marketplace_guest_post_price == null || $website->marketplace_guest_post_price != null) {
+                if ($website->guest_post_commission_price!=null && $website->guest_post_value_addition == null) {
                     $guestPostPriceTotal = (ceil(($website->publishing_price * $website->guest_post_commission_price)/100)) + $website->publishing_price;
-                }else if($website->guest_post_commission_price == null && $website->guest_post_value_addition!=null) {
+                } else if ($website->guest_post_commission_price == null && $website->guest_post_value_addition!=null) {
                     $guestPostPriceTotal = $website->guest_post_value_addition + $website->publishing_price;
+                } else {
+                    $guestPostPriceTotal = $website->marketplace_guest_post_price;
                 }
             }else{
                 $guestPostPriceTotal = $website->marketplace_guest_post_price;
@@ -301,10 +340,12 @@ class MarketplaceAPIController extends Controller
             
             $linkInsertionPriceTotal = null;
             if($website->marketplace_linkinsertion_price == null || $website->marketplace_linkinsertion_price != null){
-                if($website->link_insertion_commission_price!=null && $website->link_insertion_value_addition == null){
+                if ($website->link_insertion_commission_price!=null && $website->link_insertion_value_addition == null) {
                     $linkInsertionPriceTotal = (ceil(($website->linkinsertion_price * $website->link_insertion_commission_price)/100)) + $website->linkinsertion_price;
-                }else if($website->link_insertion_commission_price == null && $website->link_insertion_value_addition!=null) {
+                } else if ($website->link_insertion_commission_price == null && $website->link_insertion_value_addition!=null) {
                     $linkInsertionPriceTotal = $website->link_insertion_value_addition + $website->linkinsertion_price;
+                } else {
+                    $linkInsertionPriceTotal = $website->marketplace_linkinsertion_price;
                 }
             }else{
                 $linkInsertionPriceTotal = $website->marketplace_linkinsertion_price;
@@ -322,15 +363,69 @@ class MarketplaceAPIController extends Controller
                     $data['wihthout_commission_guest_post_price']=$guestPostPrice;
                     $data['total']=$cartData[0]->total;
                     $data['language'] = $request->language ?? null;
+                } else if ($request->type == 'hrie_content') {
+                    $data = array(
+                        'category_id' => $request->categoryid,
+                        'keyword' => $request->keywords,
+                        'reference' => $request->targeturl,
+                        'anchor_text' => $request->anchortext,
+                        'language' => $request->prefered_language,
+                        'target_audience' => $request->target_audience,
+                        'brief_note' => $request->briefnote
+                    );
+
+                    // dd($data);
+                    
+                    if ($request->titlesuggestion != null) {
+                        $data['title'] = $request->titlesuggestion;
+                    }
+                    if ($request->referencelink != null) {
+                        $data['refrence_link'] = $request->referencelink;
+                    }
+                    if ($request->choose_writing != null) {
+                        $data['choose_content'] = $request->choose_writing;
+                    }
+                    if ($request->writing_style != null) {
+                        $data['writting_style'] = $request->writing_style;
+                    }
+                    if ($request->prefered_voice != null) {
+                        $data['preferred_voice'] = $request->prefered_voice;
+                    }
+                    
+                    if ($request->has('dynamicFields')) {
+                        $dynamicFields = $request->input('dynamicFields');
+                        foreach ($dynamicFields as $key => $value) {
+                            if (preg_match('/^anchor_text_(\d+)$/', $key, $matches)) {
+                                $index = $matches[1];
+                                if ($index >= 1 && $index <= 4) {
+                                    $data['anchor_text_' . $index] = $value;
+                                }
+                            }
+                            if (preg_match('/^target_url_(\d+)$/', $key, $matches)) {
+                                $index = $matches[1];
+                                if ($index >= 1 && $index <= 4) {
+                                    $data['target_url_' . $index] = $value;
+                                }
+                            }
+                        }
+                    }                    
+
+                    $data['content_writter']='expert_writter';
+                    $data['expert_price']=$request->expert_price;
+                    $data['expert_price_id']=$request->expert_price_id;
+                    $data['wihthout_commission_guest_post_price']=$guestPostPrice;
+                    $data['total']=ceil($guestPostPriceTotal + $request->expert_price);
+                    $data['language'] = $request->prefered_language ?? null;
+                    $data['target_audience'] = $request->target_audience ?? null;
                 }
 
-                $cart = DB::table('carts')->where('website_id',$request->provide_content_website_id)->where('quantity_no',$request->provide_content_quantity)
+                $cart = DB::table('carts')->where('website_id', $website_id)->where('quantity_no',$quantity)
                 ->where('advertiser_id',$id)->update($data);
 
                 return response()->json(array('success' => true,'message'=>'Quantity store successfully'));
             }else{
 
-                DB::table('carts')->insert([
+                $cartId = DB::table('carts')->insertGetId([
                     'advertiser_id' => $id,
                     'website_id' => $website->id,
                     'status' => 0,
@@ -341,14 +436,16 @@ class MarketplaceAPIController extends Controller
                     'total' => ($request->type == 'provide_content') ? ceil($guestPostPriceTotal) : null,
                     'price' => $guestPostPrice,
                     'link_insertion_price' => $linkInsertionPrice,
-                    'quantity_no' => $request->provide_content_quantity,
-                    'project_id' => Auth::user()->current_project_selected,
-                    'marketplace_type' => $request->provide_content_marketplace_type,
+                    'quantity_no' => $quantity,
+                    'project_id' => Auth::user()->current_project_selected ?? null,
+                    'marketplace_type' => $marketplace_type,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+
+                $cart = DB::table('carts')->where('id', $cartId)->first();
                 
-                return response()->json(array('success' => true, 'cart' =>$cart->id ,'message'=>'Quantity store successfully','total'=>number_format($cart->total)));
+                return response()->json(array('success' => true, 'cart' => $cart->id ,'message'=>'Quantity store successfully','total'=>number_format($cart->total)));
             }    
         }
     }
@@ -366,7 +463,11 @@ class MarketplaceAPIController extends Controller
             ->where('status', 0)
             ->get()
             ->toArray();
-            
+         
+        if (!$advertiserCartListing || empty($advertiserCartListing)) {
+            return response()->json(['error' => 'Unauthorized', 'redirect_url' => route('marketplace')], 401);
+        }
+
         $websiteIds = collect($advertiserCartListing)->pluck('website_id')->unique()->toArray();
 
         $advertiserMarketplaces = DB::connection('lp_own_db')->table('advertiser_marketplace')
@@ -469,6 +570,10 @@ class MarketplaceAPIController extends Controller
         $cartDetails = $cartQuery->get()->map(function ($item) {
             return (array) $item;
         })->toArray();
+        
+        if (!$cartDetails || empty($cartDetails)) {
+            return response()->json(['error' => 'Unauthorized', 'redirect_url' => route('marketplace')], 401);
+        }
         
         $advertiserCartListing = $cartDetails;
                 
@@ -827,7 +932,12 @@ class MarketplaceAPIController extends Controller
 
     public function clientApprovalToComplete(Request $request)
     {
-        $order_attribute_id = $request->param['order_attribute_id'];
+        $order_attribute_id = $request->param['order_attribute_id'] ?? $request->order_attribute_id;
+
+        if (!$order_attribute_id || $order_attribute_id == null || $order_attribute_id == "undefined") {
+            return response()->json(['error' => 'Unauthorized', 'redirect_url' => route('marketplace')], 401);
+        }
+
         if (strpos($order_attribute_id, '#') !== 0) {
             $order_attribute_id = '#' . $order_attribute_id;
         }
@@ -1003,6 +1113,10 @@ class MarketplaceAPIController extends Controller
             ->where('carts.id', $request->cart_id)
             ->select('carts.*', 'websites.dofollow_link', 'websites.nofollow_link')
             ->first();
+
+        if (!$cartDetails || empty($cartDetails) || $cartDetails == null) {
+            return response()->json(['error' => 'Unauthorized', 'redirect_url' => route('marketplace')], 401);
+        }
 
         $websiteDetail = DB::connection('lp_own_db')->table('advertiser_marketplace')->where('website_id', $cartDetails->website_id)->first();
 

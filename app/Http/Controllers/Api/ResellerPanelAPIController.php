@@ -19,6 +19,10 @@ class ResellerPanelAPIController extends Controller
     {
         try {
             $reseller_id = $request->reseller_id;
+            
+            if (!$reseller_id || empty($reseller_id) || $reseller_id == null) {
+                return response()->json(['error' => 'Unauthorized', 'redirect_url' => route('reseller-home')], 401);
+            }
 
             $orders = DB::connection('lp_own_db')
                 ->table('order_attributes')
