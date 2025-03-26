@@ -1253,6 +1253,7 @@ class MarketplaceAPIController extends Controller
     public function clientApprovalToComplete(Request $request)
     {
         $order_attribute_id = $request->param['order_attribute_id'] ?? $request->order_attribute_id;
+        $main_user_id = $request->param['main_user_id'] ?? $request->main_user_id;
 
         if (!$order_attribute_id || $order_attribute_id == null || $order_attribute_id == "undefined") {
             return response()->json(['error' => 'Unauthorized', 'redirect_url' => route('marketplace')], 401);
@@ -1267,25 +1268,235 @@ class MarketplaceAPIController extends Controller
             ->where('order_lable', $order_attribute_id)
             ->first();
 
+        $checkTransaction = DB::connection('lp_own_db')->table('transactions')->where('order_attribute_id', $orderAttributeDetails->id)->where('tra_settled_dt', null)->where('transaction_id', 'NOT LIKE', '%ORDRETURN%')->get()->toArray();
+        
+        if($checkTransaction != null) {
+            $debit = DB::connection('lp_own_db')->table('transactions')->where('order_attribute_id', $orderAttributeDetails->id)->where('tra_credit_debit', 'LIKE', 'debit')->sum('payment');
+            $credit = DB::connection('lp_own_db')->table('transactions')->where('order_attribute_id', $orderAttributeDetails->id)
+                ->where(
+                    function ($credit) {
+                        $credit->where('tra_credit_debit', 'LIKE', 'credit');
+                        $credit->orWhere('tra_credit_debit', null);
+                    }
+                );
+            
+            $credit = $credit->sum('payment');
+            $payAmount =$credit - $debit;
+            
+            if(($payAmount == 0)) {
+                $checkTransaction = [];
+            }
+        }
+
         if ($orderAttributeDetails && $orderAttributeDetails->status == 7) {
+
+            $countCompleteOrder =  DB::connection('lp_own_db')->table('order_attributes')
+                ->join('orders', 'order_attributes.order_id', 'orders.id')
+                ->where('orders.advertiser_id', $main_user_id)->select('order_attributes.order_complete_accept_no')->orderBy('order_attributes.order_complete_accept_no', 'desc')->first();
+
+            $countCompleteOrder = $countCompleteOrder->order_complete_accept_no + 1;
+
+            $chkuserlogin = DB::connection('lp_own_db')->table('order_attributes')->join('orders', 'orders.id', 'order_attributes.order_id')
+                ->join('seller_buyer_coupons', 'orders.advertiser_id', 'seller_buyer_coupons.buyer_id')
+                ->join('users', 'users.id', 'seller_buyer_coupons.publisher_id')
+                ->where('seller_buyer_coupons.create_status', 'affiliate')
+                ->where('order_attributes.id', $orderAttributeDetails->id)
+                ->select('order_attributes.total', 'order_attributes.seller_discount_amt', 'publisher_id', 'seller_buyer_coupons.id as seller_buyer_id', 'users.email', 'users.name')
+                ->first();
+
+            if($chkuserlogin) {
+                $appSettings = DB::connection('lp_own_db')->table('admin_settings')->get();
+                $appSettingData = [];
+
+                if (!empty($appSettings)) {
+                    $data = $appSettings->map(
+                        function ($item) {
+                                return array(
+                                    $item['meta_key'] => $item['meta_value'],
+                                );
+                        }
+                    )->toArray();
+
+                    if ($data) {
+                        $appSettingData = call_user_func_array('array_merge', $data);
+                    }
+                }
+
+                $coupon_status = (int) $appSettingData['coupon_status'];
+                $coupon_discount = (int) $appSettingData['coupon_discount'];
+                $seller_reffer_amount = (int) $appSettingData['seller_refer_amount'];
+
+                $dis_amt = $chkuserlogin->discount_amount ? $chkuserlogin->discount_amount : 0;
+                $totalamt = $chkuserlogin->total - $dis_amt;
+
+                if ($chkuserlogin->publisher_id == 25940) {
+                    $disc_amt = $totalamt * 4/100;
+                } else {
+                    $disc_amt = $totalamt * 2/100;
+                }
+
+                DB::connection('lp_own_db')->table('transactions')->insert([
+                    'publisher_id' => $chkuserlogin->publisher_id,
+                    'transaction_id' => 'AFFILIATECOMM-' . date('Ymd-H:i:s'),
+                    'seller_transaction_id' => 'REFER2-' . date('Ymd') . rand(11, 99) . $chkuserlogin->publisher_id,
+                    'tra_credit_debit' => 'credit',
+                    'admin_credit_debit' => 'debit',
+                    'seller_buyer_coupon_id' => $chkuserlogin->seller_buyer_id,
+                    'payment' => $disc_amt,
+                    'order_type' => $orderAttributeDetails->content_writter,
+                    'order_id_lable' => $orderAttributeDetails->order_lable,
+                    'order_attribute_id' => $orderAttributeDetails->id,
+                    'status' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                $datas['publisher_name'] = $chkuserlogin->name;
+                $datas['publisher_email'] = $chkuserlogin->email;
+                $datas['publisher_disc_amt'] = "$".$chkuserlogin->seller_discount_amt;
+            
+                $jsonArray = escapeshellarg(json_encode($datas));
+                $additionalParam = "couponSuccessAdv";
+                $command = 'php ' . base_path('artisan') . ' background:mailSend ' . $jsonArray . ' ' . $additionalParam . '> /dev/null 2>&1 &';
+                exec($command);
+            }
+
+            $getRegisterFrom = DB::connection('lp_own_db')->table('users')->where('id', $main_user_id)->value('register_from');
+
+            if($getRegisterFrom == "dmpankaj") {
+                $dmPankajOrderCompleted = DB::connection('lp_own_db')->table('seller_buyer_coupons')->where('buyer_id', $main_user_id)->where('order_coupon_status', 1)->exists();
+
+                if(!$dmPankajOrderCompleted) {
+                    DB::connection('lp_own_db')->table('seller_buyer_coupons')->where('buyer_id', $main_user_id)->where('order_id', $orderAttributeDetails->order_id)->where('publisher_id', 7604)->where('order_coupon_status', 0)->update(['order_coupon_status' => 1]);
+                        
+                    DB::connection('lp_own_db')->table('transactions')->insert([
+                        'transaction_id' => 'REFER25-' . date('Ymd-H:i:s'),
+                        'tra_credit_debit' => 'credit',
+                        'order_type' => $orderAttributeDetails->content_writter,
+                        'order_id_lable' => $orderAttributeDetails->order_lable,
+                        'admin_credit_debit' => 'debit',
+                        'seller_transaction_id' => 'REFER25-' . date('Ymd') . rand(11, 99),
+                        'publisher_id' => 7604,
+                        'payment' => 25,
+                        'status' => 0,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
+            }
+
+            if(empty($checkTransaction) && (count($checkTransaction) < 1)) {
+
+                $website = DB::connection('lp_own_db')->table('websites')->where('id', $orderAttributeDetails->website_id)->first();
+
+                DB::connection('lp_own_db')->table('transactions')->insert([
+                    'tra_credit_debit' => 'credit',
+                    'admin_credit_debit' => 'debit',
+                    'transaction_id' => 'ORDCOMPLETION-' . $orderAttributeDetails->order_lable . '-' . date('Ymd-H:i:s'),
+                    'publisher_id' => $website->publisher_id,
+                    'order_attribute_id' => $orderAttributeDetails->id,
+                    'seller_transaction_id' => $this->generateRandomTransactionId(6, "TRSID") . time(),
+                    'payment' => $orderAttributeDetails->price,
+                    'order_type' => $orderAttributeDetails->content_writter,
+                    'order_id_lable' => $orderAttributeDetails->order_lable,
+                    'status' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                    'credit_or_debit' => 0,
+                ]);
+
+                $CheckCoupon = DB::connection('lp_own_db')->table('order_attributes')->join('orders', 'orders.id', 'order_attributes.order_id')
+                    ->join('websites', 'websites.id', 'order_attributes.website_id')
+                    ->join('users as u1', 'u1.id', 'websites.publisher_id')
+                    ->leftjoin('seller_buyer_coupons as sbc', 'orders.advertiser_id', 'sbc.buyer_id')
+                    ->join('users as u2', 'u2.id', 'sbc.publisher_id')
+                    ->where('order_attributes.id', $orderAttributeDetails->id)
+                    ->select('sbc.publisher_id', 'sbc.coupon', 'sbc.order_coupon_status', 'u1.name', 'u1.email', 'u2.name as coupon_publisher_name', 'u2.email as coupon_publisher_email')->first();
+
+                if (!empty($CheckCoupon)) {
+                    $CheckCouponInOrder = DB::connection('lp_own_db')->table('order_attributes')->join('orders', 'orders.id', 'order_attributes.order_id')
+                        ->where('orders.coupon', $CheckCoupon['coupon'])
+                        ->where('order_attributes.id', $orderAttributeDetails->id)->first();
+
+
+                    if (!empty($CheckCouponInOrder['coupon'])) {
+                        $updateCouponOrderStatus = DB::connection('lp_own_db')->table('seller_buyer_coupons')->join('users', 'users.id', 'seller_buyer_coupons.publisher_id')
+                            ->where('publisher_id', $CheckCoupon['publisher_id'])
+                            ->where('coupon', $CheckCoupon['coupon'])
+                            ->where('buyer_id', $main_user_id)
+                            ->update(array('order_coupon_status' => 1));
+
+                        $data['publisher_name'] = $CheckCoupon['coupon_publisher_name'];
+                        $data['publisher_email'] = $CheckCoupon['coupon_publisher_email'];
+                        $data['publisher_coupon'] = $CheckCoupon['coupon'];
+                    }
+                }
+
+                // $notification = Notifications::publisherWalletNotify($orderAttributeDetails->price, "wallet", $website->publisher_id);
+            }
+
+            // $notification = OrderAttributeHelper::createOrderNotification($orderAttributeDetails);
+
+            DB::connection('lp_own_db')->table('order_attribute_logs')->insert([
+                'order_attribute_id' => $orderAttributeDetails->id,
+                'status' => 6,
+                'action_by' => $main_user_id,
+                'created_at' => now(),
+                'updated_at' => now(),
+                'delay_approve' => 0,
+                'status_desc' => 0
+            ]);
+
             $updateInLP = DB::connection('lp_own_db')
                 ->table('order_attributes')
                 ->where('order_lable', $order_attribute_id)
-                ->update(['status' => 6]);
+                ->update(['status' => 6, 'order_complete_accept_no' => $countCompleteOrder]);
 
             $getPublisher = DB::connection('lp_own_db')->table('order_attributes')->join('websites', 'websites.id', 'order_attributes.website_id')
                 ->join('users', 'users.id', 'websites.publisher_id')
                 ->where('order_attributes.order_lable', $order_attribute_id)
                 ->select('websites.website_url', 'users.name', 'users.email', 'order_attributes.order_lable', 'order_attributes.order_id', 'order_attributes.created_at', 'order_attributes.url', 'order_attributes.updated_at')->first();
-            
-            // $jsonArray = escapeshellarg(json_encode($getPublisher));
-            // $additionalParam = "orderCompleteMailToPublisher";
-            // $command = 'php ' . base_path('artisan') . ' background:mailSend ' . $jsonArray . ' ' . $additionalParam . '> /dev/null 2>&1 &';
-            // exec($command);
-            // $mail = MailHelper::orderCompleteMailPublisher($getPublisher);
+        }
+
+        if (isset($countCompleteOrder)) {
+            if($countCompleteOrder == 1) {
+                $feedbackpopup = 'show';
+                session()->forget('feedbackoncomplete');
+                session()->forget('feedback_id');
+                session()->put('feedbackoncomplete', 'show');
+                session()->put('feedback_id', $orderAttributeDetails->id);
+
+            }else{
+                $feedback = $countCompleteOrder / 5;
+                if (is_int($feedback)) {
+                    session()->forget('feedbackoncomplete');
+                    session()->forget('feedback_id');
+                    session()->put('feedbackoncomplete', 'show');
+                    session()->put('feedback_id', $orderAttributeDetails->id);
+                    $feedbackpopup = 'show';
+                } else {
+                    $feedbackpopup = 'not show';
+                }
+            }
+        } else {
+            $feedbackpopup = 'not show';
         }
         
         return response()->json(array('success' => true, 'message' => 'Order completed Successfully'));
+    }
+
+    private function generateRandomTransactionId($length, $prefix)
+    {
+        try {
+            $pool = array_merge(range(0, 9));
+            $key = "";
+            for ($i = 0; $i < $length; $i++) {
+                $key .= $pool[mt_rand(0, count($pool) - 1)];
+            }
+            return $prefix . $key;
+        } catch (Exception $e) {
+            Exceptions::exception($e);
+        }
     }
 
     public function getClientChatMessage(Request $request)

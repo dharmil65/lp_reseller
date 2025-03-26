@@ -289,13 +289,19 @@
 				$(document).on('click', '.checked', function () {
             
 					var order_attribute_id = $(this).parent().attr('data-oaid');
+
 					$('#multiAction'+order_attribute_id).css('display', 'none');
 					$('#srch'+order_attribute_id).css('display', 'block');
+					
 					$(this).css('pointer-events', 'none');
+
 					var parameters={
-						'order_attribute_id':order_attribute_id
+						'order_attribute_id': order_attribute_id,
+						'main_user_id': $('#main_user_id').val()
 					}
+
 					$('#loader-' + order_attribute_id).show();
+					
 					$.ajax({
 						type: 'POST',
 						url: "/api/client-approval-to-complete",
