@@ -929,10 +929,34 @@
                 });
                 
                 var formData = new FormData(form);
+
+                var attachment = $("#provide_content_detail input[name='attachment']")[0].files;
+                var attachment = attachment[0];
+                var website_id = $('#provide_content_website_id').val();
+
+                var formData = new FormData();
+                formData.append('website_id', website_id);
+                var attachmentVal = $('#provide_content_detail #hideAttach').val();
+
+                if (attachmentVal != undefined || attachmentVal != '') {
+                    var attachment = $("#provide_content_detail input[name='attachment']")[0].files;
+                    formData.append('attachment', attachment[0]);
+                }
+
                 var end_client_id = $('#user_id').val();
                 formData.append('_token', '{{ csrf_token() }}');
                 formData.append('type', 'provide_content');
                 formData.append('end_client_id', end_client_id);
+                formData.append('specialinstruction', $('#instruction').val());
+                formData.append('quantity', $('#provide_content_quantity').val());
+                formData.append('marketplace_type', $('#provide_content_marketplace_type').val());
+
+                if (languageListOfSelectedCart.length === 1) {
+                    $('#language').val(languageListOfSelectedCart[0]).trigger('change');
+                    formData.append('language', languageListOfSelectedCart[0]);
+                } else {
+                    formData.append('language', $('#language').val());
+                }
 
                 $.ajax({
                     type: 'POST',
@@ -940,9 +964,28 @@
                     data: formData,
                     processData: false,
                     contentType: false,
+                    async: false,
+                    cache: false,
                     success: function(data) {
                         $('#provide-content').modal('hide');
                         toastr.success('Backlink details added successfully');
+
+                        var submitedCount = $('.cart-backlink-title .cart-dott-fill').length;
+                        if (submitedCount == 4) {
+                            var active_no = $('.cart_list_data.active').attr('data-list-no');
+                            var curentActive = $('.cart_list_data.active').attr('data-web-id');
+
+                            var active_websiteno = parseInt(active_no) + 1;
+                            var website_active = $('label.cart_list_number_' + active_websiteno).attr('data-web-id');
+
+                            if (website_active == undefined && website_active) {
+                                var active_websiteno = active_no - 1;
+                                var website_active = $('label.cart_list_number_' + active_websiteno).attr('data-web-id');
+                            }
+                        }
+
+                        var cart_id = data.cart_id;
+                        $('#provide_content_' + cart_id).find('input[type=checkbox]').prop('checked', true);
                     },
                     error: function(xhr, status, error) {
                         setTimeout(function() {

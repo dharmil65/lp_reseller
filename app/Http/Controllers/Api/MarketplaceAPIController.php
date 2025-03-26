@@ -419,7 +419,7 @@ class MarketplaceAPIController extends Controller
 
                 $cart = DB::table('carts')->where('website_id', $website_id)->where('quantity_no', $quantity)->where('advertiser_id', $id)->update($data);
 
-                return response()->json(array('success' => true,'message'=>'Quantity store successfully'));
+                return response()->json(array('success' => true,'message'=>'Quantity store successfully', 'cart_id' => $cartData[0]->id));
             } else {
                 $cartId = DB::table('carts')->insertGetId([
                     'advertiser_id' => $id,
@@ -1459,14 +1459,14 @@ class MarketplaceAPIController extends Controller
         }
 
         if (isset($countCompleteOrder)) {
-            if($countCompleteOrder == 1) {
+            if ($countCompleteOrder == 1) {
                 $feedbackpopup = 'show';
                 session()->forget('feedbackoncomplete');
                 session()->forget('feedback_id');
                 session()->put('feedbackoncomplete', 'show');
                 session()->put('feedback_id', $orderAttributeDetails->id);
 
-            }else{
+            } else {
                 $feedback = $countCompleteOrder / 5;
                 if (is_int($feedback)) {
                     session()->forget('feedbackoncomplete');
