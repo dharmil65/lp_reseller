@@ -339,7 +339,7 @@ class MarketplaceAPIController extends Controller
             }
             
             $linkInsertionPriceTotal = null;
-            if($website->marketplace_linkinsertion_price == null || $website->marketplace_linkinsertion_price != null){
+            if ($website->marketplace_linkinsertion_price == null || $website->marketplace_linkinsertion_price != null) {
                 if ($website->link_insertion_commission_price!=null && $website->link_insertion_value_addition == null) {
                     $linkInsertionPriceTotal = (ceil(($website->linkinsertion_price * $website->link_insertion_commission_price)/100)) + $website->linkinsertion_price;
                 } else if ($website->link_insertion_commission_price == null && $website->link_insertion_value_addition!=null) {
@@ -347,11 +347,11 @@ class MarketplaceAPIController extends Controller
                 } else {
                     $linkInsertionPriceTotal = $website->marketplace_linkinsertion_price;
                 }
-            }else{
+            } else {
                 $linkInsertionPriceTotal = $website->marketplace_linkinsertion_price;
             }
 
-            if(count($cartData) > 0){
+            if (count($cartData) > 0) {
                 if($request->type == 'provide_content'){
                     if($request->file('attachment')){
                         $file = $request->file('attachment');
@@ -363,7 +363,7 @@ class MarketplaceAPIController extends Controller
                     $data['wihthout_commission_guest_post_price']=$guestPostPrice;
                     $data['total']=$cartData[0]->total;
                     $data['language'] = $request->language ?? null;
-                } else if ($request->type == 'hrie_content') {
+                } else if ($request->type == 'hire_content') {
                     $data = array(
                         'category_id' => $request->categoryid,
                         'keyword' => $request->keywords,
@@ -374,8 +374,6 @@ class MarketplaceAPIController extends Controller
                         'brief_note' => $request->briefnote
                     );
 
-                    // dd($data);
-                    
                     if ($request->titlesuggestion != null) {
                         $data['title'] = $request->titlesuggestion;
                     }
@@ -419,12 +417,10 @@ class MarketplaceAPIController extends Controller
                     $data['target_audience'] = $request->target_audience ?? null;
                 }
 
-                $cart = DB::table('carts')->where('website_id', $website_id)->where('quantity_no',$quantity)
-                ->where('advertiser_id',$id)->update($data);
+                $cart = DB::table('carts')->where('website_id', $website_id)->where('quantity_no', $quantity)->where('advertiser_id', $id)->update($data);
 
                 return response()->json(array('success' => true,'message'=>'Quantity store successfully'));
-            }else{
-
+            } else {
                 $cartId = DB::table('carts')->insertGetId([
                     'advertiser_id' => $id,
                     'website_id' => $website->id,
@@ -509,7 +505,7 @@ class MarketplaceAPIController extends Controller
         
         foreach ($orderSummaryListing as $key => $val) {
             $provideContent = $linkinsertion = $hirecontent = 0;
-            $provideContent_total = $linkinsertion_total = $hirecontent_total = $expertPriceTotal = 0;
+            $provideContent_total = $linkinsertion_total = $hirecontent_total = $expertPriceTotal = $expertPriceTotalOld = 0;
             $res = $orderSummaryListing[$key];
 
             for ($j = 0; $j < count($res); $j++) {
@@ -523,6 +519,14 @@ class MarketplaceAPIController extends Controller
                 if ($res[$j]->content_writter == 'provide_content') {
                     $provideContent += 1;
                     $provideContent_total += $res[$j]->total;
+                } else if ($res[$j]->content_writter == 'expert_writter') {
+                    $hirecontent += 1;
+                    $hirecontent_total += $res[$j]->total;
+                    $expertPriceTotal += ($res[$j]->expert_price != null) ? $res[$j]->expert_price : 0;
+
+                    if (isset($res[$j]->expert_price)) {
+                        $expertPriceTotalOld += $res[$j]->expert_price;
+                    }
                 }
 
                 $orderSummaryData[$key]['quantity'] = [
@@ -570,7 +574,7 @@ class MarketplaceAPIController extends Controller
         $cartDetails = $cartQuery->get()->map(function ($item) {
             return (array) $item;
         })->toArray();
-        
+
         if (!$cartDetails || empty($cartDetails)) {
             return response()->json(['error' => 'Unauthorized', 'redirect_url' => route('marketplace')], 401);
         }
@@ -587,10 +591,34 @@ class MarketplaceAPIController extends Controller
 
         $resellerUserId = $user_id;
         $balance = DB::connection('lp_own_db')->table('wallets')->where('end_client_id', $user_id)->where('status', 'complete')->orderBy('id', 'desc')->pluck('total')->first();
+
+        $checkIfVacationMode = DB::connection('lp_own_db')->table('websites')->select("websites.id")
+            ->join('users', 'websites.publisher_id', '=', 'users.id')
+            ->whereIn('websites.id', $websiteIds)
+            ->where('users.vacation_mode', 1)
+            ->exists();
+
+        $sellerBuyerCoupon = DB::connection('lp_own_db')->table('seller_buyer_coupons')->where('buyer_id', $user_id)->where('status', 0)->get()->toArray();
+
+        if(isset($sellerBuyerCoupon) && !empty($sellerBuyerCoupon)) {
+            $referDiscount = $cartstotal * 10/100;
+            $cartstotal =  $cartstotal - round($referDiscount);
+        }
+
+        if ($cartstotal > $balance) {
+            return response()->json(['success' => true, 'error' => 'Wallet balance is low', 'flag' => 1, 'redirect_url' => route('marketplace')], 401);
+        } else if ($checkIfPriceChanged) {
+            Session::put('flagMessage', 'Price has changed in carts');
+            return response()->json(['success' => true, 'error' => 'Price has changed in carts', 'flag' => 2, 'redirect_url' => route('marketplace')], 401);
+        } else if ($checkIfVacationMode) {
+            Session::put('flagMessage', 'Publisher websites under review');
+            return response()->json(['success' => true, 'error' => 'Publisher websites under review.', 'flag' => 3, 'redirect_url' => route('marketplace')], 401);
+        }
+            
         $data = [
             'advertiser' => DB::table('reseller_users')->where('id', $resellerUserId)->value('name'),
             'order_url' => url('/') . '/advertiser/order',
-            'email' => $email ?? null
+            'email' => DB::table('reseller_users')->where('id', $resellerUserId)->value('email')
         ];
 
         $websiteId = !empty($advertiserCartListing) ? array_column($advertiserCartListing, "website_id") : [];
@@ -600,16 +628,28 @@ class MarketplaceAPIController extends Controller
             ->get()
             ->keyBy('id');
 
-        $orderNoti = [];
-        $contentNoti = [];
-        $publisherMail = [];
-        $lowPrizeMail = [];
-        $orderAttrMail = [];
-
         $getEmail = DB::table('reseller_users')->where('id', $user_id)->value('email');
         $getUserID = DB::connection('lp_own_db')->table('users')->where('email', $getEmail)->value('id');
         $ordercount =  DB::connection('lp_own_db')->table('orders')->where('advertiser_id', $getUserID)->select('orders.orderno_count')->orderBy('orders.orderno_count', 'desc')->first();
         $countOrder = $ordercount == null ? 1 : $ordercount->orderno_count + 1;
+
+        $appSettings = DB::connection('lp_own_db')->table('admin_settings')->get();
+
+        $appSettingData = [];
+        
+        if (!empty($appSettings)) {
+            $data = $appSettings->map(
+                function ($item) {
+                    return array(
+                        $item->meta_key => $item->meta_value,
+                    );
+                }
+            )->toArray();
+
+            if ($data) {
+                $appSettingData = call_user_func_array('array_merge', $data);
+            }
+        }
 
         $orderId = DB::connection('lp_own_db')->table('orders')->insertGetId([
             'order_no' => $this->generateOrderId(),
@@ -620,6 +660,15 @@ class MarketplaceAPIController extends Controller
             'updated_at' => now(),
             'orderno_count' => $countOrder ?? 0,
         ]);
+
+        $chkuserlogin = DB::connection('lp_own_db')->table('seller_buyer_coupons')
+            ->where('create_status', 'affiliate')
+            ->where('buyer_id', $getUserID)
+            ->first();
+        
+        $publisher_details_all = DB::connection('lp_own_db')->table('users')->select('name', 'email','id')->get()->keyBy('id');
+
+        $orderNoti = $contentNoti = $publisherMail = $lowPrizeMail = $orderAttrMail = $publisherMail = [];
         
         for ($i = 0; $i < count($advertiserCartListing); $i++) {
 
@@ -640,12 +689,58 @@ class MarketplaceAPIController extends Controller
             $fc_link_insertion_commission_price = isset($website->fc_link_insertion_commission_price) && $website->fc_link_insertion_commission_price > 0 ? $website->fc_link_insertion_commission_price : null;
             $fc_link_insertion_value_addition = isset($website->fc_link_insertion_value_addition) && $website->fc_link_insertion_value_addition > 0 ? $website->fc_link_insertion_value_addition : null;
 
+            $expert_days = $days = $total_price = $discount_amount = $discountAmount = 0;
             $tat = $website->tat;
-            $expert_days = $days = 0;
-            $total_price=0;
-            $discount_amount = 0;
+            $coupon_status = (int) $appSettingData['coupon_status'];
+            
+            if (isset($appSettingData['coupon_discount'])) {
+                $discount_amount = $appSettingData['coupon_discount'];
+            }
+            
             $totalGpOrderAmt = $advertiserCartListing[$i]['total'] - $advertiserCartListing[$i]['expert_price'];
-            $discountAmount = 0;
+
+            $currenttime = Carbon::now();
+
+            $promo_percentage = DB::connection('lp_own_db')->table('promotions')->where('start_date', '<=', $currenttime)
+                ->where('end_date', '>=', $currenttime)
+                ->where('promotion_website.website_id', $advertiserCartListing[$i]['website_id'])
+                ->join('promotion_website', 'promotion_website.promotion_id', 'promotions.id')
+                ->select('promo_percentage','offer_name')
+                ->first();
+
+            if ($advertiserCartListing[$i]['source']){
+                $source = $advertiserCartListing[$i]['source'];
+            } else {
+                $source = null;
+            }
+
+            if ($advertiserCartListing[$i]['content_writter'] == "provide_content") {
+                $price = $advertiserCartListing[$i]['wihthout_commission_guest_post_price'];
+                $attachment = $advertiserCartListing[$i]['attachment'];
+                $total = $advertiserCartListing[$i]['total'];
+                $with_comission_price = $advertiserCartListing[$i]['total'] - $discountAmount;
+                $total_price = $advertiserCartListing[$i]['total'] - $discountAmount;
+            } else if ($advertiserCartListing[$i]['content_writter'] == "link_insertion") {
+                $price = $advertiserCartListing[$i]['wihthout_commission_linkinsertion_price'];
+                $link_insertion_price = $advertiserCartListing[$i]['link_insertion_price'];
+                $total = $advertiserCartListing[$i]['total'];
+                $with_comission_price = $advertiserCartListing[$i]['total'] - $discountAmount;
+                $total_price = $advertiserCartListing[$i]['total'] - $discountAmount;
+            } else if ($advertiserCartListing[$i]['content_writter'] == "hire_content") {
+                $price = $advertiserCartListing[$i]['wihthout_commission_guest_post_price'];
+                $expert_price_id = $advertiserCartListing[$i]['expert_price_id'];
+                $expert_price = $advertiserCartListing[$i]['expert_price'];
+                $original_expert_price = $advertiserCartListing[$i]['expert_price'];
+                $total = $advertiserCartListing[$i]['total'];
+                $with_comission_price = $advertiserCartListing[$i]['total'] - $discountAmount;
+                $total_price = $advertiserCartListing[$i]['total'] - $discountAmount;
+                $expert = DB::connection('lp_own_db')->table('expert_prices')->find($advertiserCartListing[$i]['expert_price_id']);
+                $expert_days = $expert->days;
+                $content_days = $expert->days;
+            } else {
+                $price = $advertiserCartListing[$i]['wihthout_commission_guest_post_price'];
+                $total = $advertiserCartListing[$i]['total'];
+            }
 
             if (!empty($tat)) {
                 $tatArr = explode('_', $tat);
@@ -699,10 +794,20 @@ class MarketplaceAPIController extends Controller
                         'created_at' => now(),
                         'updated_at' => now(),
                         'reseller_order' => 1,
-                        'price' => $advertiserCartListing[$i]['wihthout_commission_guest_post_price'],
-                        'total' => $advertiserCartListing[$i]['total'],
+                        'price' => $price,
+                        'total' => $total,
                         'due_date' => $due_date,
                         'due_time' => Carbon::now()->format('H:i:s'),
+                        'source' => $source,
+                        'anchor_text_1' => $advertiserCartListing[$i]['anchor_text_1'] ?? null,
+                        'anchor_text_2' => $advertiserCartListing[$i]['anchor_text_2'] ?? null,
+                        'anchor_text_3' => $advertiserCartListing[$i]['anchor_text_3'] ?? null,
+                        'anchor_text_4' => $advertiserCartListing[$i]['anchor_text_4'] ?? null,
+                        'target_url_1' => $advertiserCartListing[$i]['target_url_1'] ?? null,
+                        'target_url_2' => $advertiserCartListing[$i]['target_url_2'] ?? null,
+                        'target_url_3' => $advertiserCartListing[$i]['target_url_3'] ?? null,
+                        'target_url_4' => $advertiserCartListing[$i]['target_url_4'] ?? null,
+                        'discount_amount' => $discountAmount,
                     ]);
                 } catch (Exception $e) {
                     \Log::info(['error while inserting data in lp_own_db.order_attributes', $e]);
@@ -712,7 +817,73 @@ class MarketplaceAPIController extends Controller
                     DB::table('carts')->whereIn('id', $cartId)->delete();
                 }
 
+                if ($chkuserlogin) {
+                    
+                    $exp = isset($expert_price) ? $expert_price : $advertiserCartListing[$i]['expert_price'];
+                    if ($chkuserlogin->publisher_id == 25940) {
+                        $sellerDis = ($total - $discountAmount - $exp) * 0.04;
+                    } else {
+                        $sellerDis = ($total - $discountAmount - $exp) * 0.02;
+                    }
+                    
+                    DB::connection('lp_own_db')->table('order_attributes')->where('id', $orderAttributesId)->update(['seller_discount_amt' => $sellerDis]);
+                }
+
                 $orderLabel = $orderLabel ?? null;
+
+                $data['website_name'] = $website->website_url;
+
+                $publisher_details = $publisher_details_all[$website->publisher_id];
+
+                $data = [
+                    'website_name' => $website->website_url,
+                    'publisher' => $publisher_details->name,
+                    'publisher_order' => url('/') . '/publisher/orders-details',
+                    'publisher_email' => $publisher_details->email,
+                    'order_label' => $orderLabel
+                ];
+
+                if ($advertiserCartListing[$i]['content_writter'] == "hire_content") {
+                    $contentData = DB::connection('lp_own_db')->table('contents')->insert([
+                        'order_attribute_id' => $orderAttributesId,
+                        'content_status' => 0,
+                        'content_due_date' => isset($content_days) ? Carbon::now()->addDays($content_days)->format('Y-m-d') : null,
+                    ]);
+                    
+                    if ($contentData) {
+                        $content = DB::connection('lp_own_db')->table('contents')
+                            ->where('order_attribute_id', $orderAttributesId)
+                            ->latest('id')
+                            ->first();
+                    
+                        $checkContent = DB::connection('lp_own_db')->table('content_logs')
+                            ->where('order_attribute_id', $orderAttributesId)
+                            ->whereNotNull('old_attachment')
+                            ->count();
+                    
+                        DB::connection('lp_own_db')->table('content_logs')->insert([
+                            'status' => $status,
+                            'order_attribute_id' => $orderAttributesId,
+                            'user_id' => $user,
+                            'old_attachment' => $name,
+                            'modification_flag' => $checkContent >= 1 ? 2 : 1,
+                        ]);
+                    
+                        $contentNoti[] = $content;
+                    }
+                } else {
+                    $publisherMail[] = $data;
+                }
+
+                DB::connection('lp_own_db')->table('order_attribute_logs')->insert([
+                    'order_attribute_id' => $orderAttributesId,
+                    'status' => 1,
+                    'action_by' => $getUserID,
+                    'attachment' => $advertiserCartListing[$i]['attachment'],
+                    'delay_approve' => 0,
+                    'status_desc' => 0
+                ]);
+
                 $contentWriter = $advertiserCartListing[$i]['content_writter'];
                 $description = match ($contentWriter) {
                     'expert_writter' => 'Content and Guest Post',
@@ -754,15 +925,125 @@ class MarketplaceAPIController extends Controller
                         'order_type' => $extraData['order_type'],
                     ]);
                 }
+
+                $walletId = DB::connection('lp_own_db')->table('wallets')->insertGetId($walletData);
+
+                $wallet = DB::connection('lp_own_db')->table('wallets')->where('id', $walletId)->first();
+
+                $checkPriceCompare = DB::connection('lp_own_db')->table('advertiser_marketplace')->where('website_id', $advertiserCartListing[$i]['website_id'])->first();
                 
-                $wallet = DB::connection('lp_own_db')->table('wallets')->insert($walletData);
+                if(!$checkPriceCompare){
+                    $getActualPrice  =  $this->getActualPrice($advertiserCartListing[$j]);
+                }
+
+                if ($advertiserCartListing[$i]['content_writter'] == "provide_content") {
+                    if ($advertiserCartListing[$i]['marketplace_type'] == 0) {
+                        $payThisOrder = $wallet->amount;
+                        $acctualprice =  $checkPriceCompare ? $checkPriceCompare->guest_post_price : $getActualPrice['guest_post_price'] - $advertiserCartListing[$i]['discount_amount'];
+                    } else {
+                        $payThisOrder = $wallet->amount;
+                        $acctualprice = $checkPriceCompare ? $checkPriceCompare->forbidden_category_guest_post_price : $getActualPrice['forbidden_category_guest_post_price'] - $advertiserCartListing[$i]['discount_amount'];
+                    }
+                } elseif ($advertiserCartListing[$i]['content_writter'] == "link_insertion") {
+                    if ($advertiserCartListing[$i]['marketplace_type'] == 0) {
+                        $payThisOrder = $wallet->amount;
+                        $acctualprice = $checkPriceCompare ? $checkPriceCompare->linkinsertion_price : $getActualPrice['linkinsertion_price'] - $advertiserCartListing[$i]['discount_amount'];
+                    } else {
+                        $payThisOrder = $wallet->amount;
+                        $acctualprice = $checkPriceCompare ? $checkPriceCompare->forbidden_category_linkinsertion_price : $getActualPrice['forbidden_category_linkinsertion_price']  - $advertiserCartListing[$i]['discount_amount'];
+                    }
+                } elseif ($advertiserCartListing[$i]['content_writter'] == "expert_writter") {
+                    if ($advertiserCartListing[$i]['marketplace_type'] == 0) {
+                        $payThisOrder = $wallet->amount;
+                        $acctualprice = ($checkPriceCompare ? $checkPriceCompare->guest_post_price : $getActualPrice['guest_post_price']) + $advertiserCartListing[$i]['expert_price'] - $advertiserCartListing[$i]['discount_amount'];
+                    }else{
+                        $payThisOrder = $wallet->amount;
+                        $acctualprice = ($checkPriceCompare ? $checkPriceCompare->forbidden_category_guest_post_price : $getActualPrice['forbidden_category_guest_post_price'])  + $advertiserCartListing[$i]['expert_price'] - $advertiserCartListing[$i]['discount_amount'];
+                    }
+                }
+
+                $mailData['orderLable'] = $orderLabel;
+                $mailData['advertiserName'] = DB::table('reseller_users')->where('id', $resellerUserId)->value('name');
+                $mailData['publisherName'] = $publisher_details->name;
+
+                if ($advertiserCartListing[$i]['content_writter'] == "provide_content") {
+                    $mailData['orderType'] = "Guest Post";    
+                } else if ($advertiserCartListing[$i]['content_writter'] == "expert_writter") {
+                    $mailData['orderType'] = "Content + GP";    
+                } else if ($advertiserCartListing[$i]['content_writter'] == "link_insertion") {
+                    $mailData['orderType'] = "Link Insertion";    
+                }
+
+                $mailData['orderPrice'] = $payThisOrder;
+                $mailData['marketplacePrice'] = $acctualprice;
+                $mailData['route'] = null;
+
+                if($payThisOrder != $acctualprice) {
+                    $jsonArray = escapeshellarg(json_encode($mailData));
+                    $additionalParam = "orderPlacedAtLowPriceMail";
+                    $command = 'php ' . base_path('artisan') . ' background:mailSend ' . $jsonArray . ' ' . $additionalParam . '> /dev/null 2>&1 &';
+                    exec($command);
+                }
+
+                if (isset($sellerBuyerCoupon) && !empty($sellerBuyerCoupon)) {
+                    $publisherName = DB::connection('lp_own_db')->table('users')->where('id', $sellerBuyerCoupon[0]['publisher_id'])->get()->toArray();
+                    $updateSellerBuyerCouponStatus = DB::connection('lp_own_db')->table('seller_buyer_coupons')->where('buyer_id', $getUserID)->update(['status' => 1, 'reject_order_status' => '0' , 'order_id' => $orderId]);
+                }
+
+                $ordercount = DB::connection('lp_own_db')->table('orders')->where('advertiser_id', $getUserID)->select('orders.orderno_count')->orderBy('orders.orderno_count', 'desc')->first();
+                $countOrder = isset($ordercount) ? $ordercount->orderno_count + 1 : 1;
+
+                DB::connection('lp_own_db')->table('orders')->where('id', $orderId)->update([
+                    'grand_total' => $total_price,
+                    'coupon' => isset($sellerBuyerCoupon) && !empty($sellerBuyerCoupon) ? $sellerBuyerCoupon[0]['coupon'] : null,
+                    'discount' => isset($totalDiscount) && $totalDiscount != null ? $totalDiscount : null,
+                    'orderno_count' => $countOrder
+                ]);
+
+                $getRegisterFrom = DB::connection('lp_own_db')->table('users')->where('id', $getUserID)->value('register_from');
+                
+                if ($getRegisterFrom == "dmpankaj") {
+                    $orderCompletedExists = DB::connection('lp_own_db')->table('seller_buyer_coupons')->where('buyer_id', $getUserID)->where('order_coupon_status', 1)->exists();
+                    
+                    if (!$orderCompletedExists) {
+                        DB::connection('lp_own_db')->table('seller_buyer_coupons')->insert([
+                            'buyer_id' => $getUserID,
+                            'publisher_id' => 7604,
+                            'coupon' => "DMPANKAJ",
+                            'order_id' => $order->id,
+                            'status' => 1,
+                        ]);
+                    }
+                }
+    
+                if ($countOrder == 1) {
+                    session()->forget('feedbackoncomplete');
+                    session()->forget('feedback_id');
+                    session()->put('feedbackoncomplete', 'show');
+                    session()->put('feedback_id', $orderId);
+                    $feedbackpopup = 'show';
+                    $feedback_id = $orderId;
+                } else {
+                    $feedback = $countOrder / 5;
+                    if (is_int($feedback)) {
+                        $feedback_id = $orderId;
+                        session()->forget('feedbackoncomplete');
+                        session()->forget('feedback_id');
+                        session()->put('feedbackoncomplete', 'show');
+                        session()->put('feedback_id', $orderId);
+                        $feedbackpopup = 'show';
+                    } else {
+                        $feedback_id = '';
+                        $feedbackpopup = 'not show';
+                    }
+                }
             } else {
                 return response()->json(array('success' => false, 'message' => 'Order not executed due to low wallet balance.'));
             }
 
         }
 
-        return response()->json(array('success' => true, 'message' => 'Order placed successfully!!','flag'=>0));
+        return response()->json(array('success' => true, 'message' => 'Order placed successfully!!', 'flag'=>0));
     }
 
     private function generateOwnOrderLable()
@@ -825,6 +1106,45 @@ class MarketplaceAPIController extends Controller
         } while ($exists);
 
         return $unique_order_id;
+    }
+
+    public function getActualPrice($orderAttr){
+
+        $checkPriceCompareFromWebsites = DB::connection('lp_own_db')->table('websites')->where('id', $advertiserCartListing[$i]['website_id'])->first();
+
+        if ($checkPriceCompareFromWebsites->publishing_price != null && !empty($checkPriceCompareFromWebsites->publishing_price)) {
+            if ($checkPriceCompareFromWebsites->guest_post_commission_price) {
+                $priceList['guest_post_price'] = ceil($checkPriceCompareFromWebsites->publishing_price + (($checkPriceCompareFromWebsites->publishing_price * $checkPriceCompareFromWebsites->guest_post_commission_price)/100));
+            } else if ($checkPriceCompareFromWebsites->guest_post_value_addition) {
+                $priceList['guest_post_price'] = ceil($checkPriceCompareFromWebsites->publishing_price + $checkPriceCompareFromWebsites->guest_post_value_addition);       
+            }
+        }
+
+        if($checkPriceCompareFromWebsites->linkinsertion_price != null && !empty($checkPriceCompareFromWebsites->linkinsertion_price)){               
+            if ($checkPriceCompareFromWebsites->link_insertion_commission_price) {
+                $priceList['linkinsertion_price'] = ceil($checkPriceCompareFromWebsites->linkinsertion_price + (($checkPriceCompareFromWebsites->linkinsertion_price * $checkPriceCompareFromWebsites->link_insertion_commission_price)/100));
+            } else if ($checkPriceCompareFromWebsites->link_insertion_value_addition) {
+                $priceList['linkinsertion_price'] = ceil($checkPriceCompareFromWebsites->linkinsertion_price + $checkPriceCompareFromWebsites->link_insertion_value_addition);  
+            }     
+        }
+
+        if ($checkPriceCompareFromWebsites->forbidden_category_guest_post_price != null) {
+            if($checkPriceCompareFromWebsites->fc_guest_post_commission_price){
+                $priceList['forbidden_category_guest_post_price']=ceil($checkPriceCompareFromWebsites->forbidden_category_guest_post_price + (($checkPriceCompareFromWebsites->forbidden_category_guest_post_price * $checkPriceCompareFromWebsites->fc_guest_post_commission_price)/100));
+            } else if ($checkPriceCompareFromWebsites->fc_guest_post_value_addition){
+                $priceList['forbidden_category_guest_post_price']=ceil($checkPriceCompareFromWebsites->forbidden_category_guest_post_price + $checkPriceCompareFromWebsites->value_addition);
+            }
+        }  
+            
+        if ($checkPriceCompareFromWebsites->forbidden_category_linkinsertion_price != null && $checkPriceCompareFromWebsites->other_category_price == null){
+            if ($checkPriceCompareFromWebsites->fc_link_insertion_commission_price) {
+                $priceList['forbidden_category_linkinsertion_price']=ceil($checkPriceCompareFromWebsites->forbidden_category_linkinsertion_price + (($checkPriceCompareFromWebsites->forbidden_category_linkinsertion_price * $checkPriceCompareFromWebsites->fc_link_insertion_commission_price)/100));
+            } else if ($checkPriceCompareFromWebsites->fc_link_insertion_value_addition) {
+                $priceList['forbidden_category_linkinsertion_price']=ceil($checkPriceCompareFromWebsites->forbidden_category_linkinsertion_price + $checkPriceCompareFromWebsites->fc_link_insertion_value_addition);
+            }
+        }
+
+        return $priceList;
     }
 
     public function fetchClientOrders(Request $request)
