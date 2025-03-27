@@ -419,7 +419,7 @@ class MarketplaceAPIController extends Controller
 
                 $cart = DB::table('carts')->where('website_id', $website_id)->where('quantity_no', $quantity)->where('advertiser_id', $id)->update($data);
 
-                return response()->json(array('success' => true,'message'=>'Quantity store successfully', 'cart_id' => $cartData[0]->id));
+                return response()->json(array('success' => true,'message'=>'Quantity store successfully', 'cart_id' => $cartData[0]->id, 'web_id' => $cartData[0]->website_id));
             } else {
                 $cartId = DB::table('carts')->insertGetId([
                     'advertiser_id' => $id,

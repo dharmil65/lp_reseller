@@ -71,9 +71,15 @@ class MarketplaceController extends Controller
             ->get()
             ->toArray();
 
+        $cartTotal = count($getCartData);
+
         $cartTotalAmount = number_format(array_sum(array_column($getCartData, 'total')));
 
-        return view('client_cart', compact('walletBalance', 'cartTotal', 'userid', 'getCartData', 'cartTotalAmount'));
+        $CartPendingCount = DB::table('carts')->select('carts.content_writter')->where('advertiser_id', $userid)->where('carts.status', 0)->whereNull('content_writter')->count();
+
+        $cartDoneCount = DB::table('carts')->select('carts.content_writter')->where('advertiser_id', $userid)->where('carts.status', 0)->whereNotNull('content_writter')->count();
+
+        return view('client_cart', compact('walletBalance', 'cartTotal', 'userid', 'getCartData', 'cartTotalAmount', 'CartPendingCount', 'cartDoneCount'));
     }
 
     public function clientOrdersView()

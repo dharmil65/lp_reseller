@@ -260,7 +260,7 @@
                         </div>
                         <div class="cart-total" id="go_to_checkout_detail">
                             <p>Order Total: <span>{{ "$".$cartTotalAmount ?? 0 }}</span></p>
-                            <a href="" id="go_to_summary_btn" class="btn button go_to_summary_btn active">Go to Order Summary <img src="{{asset('assets/images/summary-right.svg')}}" alt="summary-right"></a>
+                            <a href="" id="go_to_summary_btn" class="btn button @if($CartPendingCount == 0) active @else go_to_summery_msg_error @endif">Go to Order Summary <img src="{{asset('assets/images/summary-right.svg')}}" alt="summary-right"></a>
                         </div>
                         <div class="backlink-add" id="success_msg">
                             <img src="{{asset('assets/images/cart-backlink-add.svg')}}" alt="cart-backlink-add">
@@ -300,100 +300,99 @@
                                     </div>
                                 </div>
                                 <div class="cart-list-data">
-                                <ul class="cart-list-data">
-                                    <?php $cartNo = 0; $DataNo = 0; $websiteActive = ''; $active_marketplace_type = 0; ?>
-                                    @foreach($getCartData as $cartData)
-                                        <?php $DataNo++; ?>
+                                    <ul class="cart-list-data">
+                                        <?php $cartNo = 0; $DataNo = 0; $websiteActive = ''; $active_marketplace_type = 0; ?>
+                                        @foreach($getCartData as $cartData)
+                                            <?php $DataNo++; ?>
 
-                                        <li data-list-no="{{ $DataNo }}" 
-                                            class="cart_list 
-                                            @if($cartNo == 0 && $websiteActive == '') active 
-                                            @elseif(($websiteActive == $cartData->cart_web_id) && ($active_marketplace_type == $cartData->marketplace_type) && ($websiteActive != '')) active  
-                                            @endif" 
-                                            data-id="{{ $cartData->cart_id }}" 
-                                            id="cart_list_{{ $cartData->cart_id }}" 
-                                            data-web-id="{{ $cartData->cart_web_id }}" 
-                                            data-type="{{ $cartData->marketplace_type }}" 
-                                            data-url="{{ $cartData->host_url }}">
+                                            <li data-list-no="{{ $DataNo }}" 
+                                                class="cart_list 
+                                                @if($cartNo == 0 && $websiteActive == '') active 
+                                                @elseif(($websiteActive == $cartData->cart_web_id) && ($active_marketplace_type == $cartData->marketplace_type) && ($websiteActive != '')) active  
+                                                @endif" 
+                                                data-id="{{ $cartData->cart_id }}" 
+                                                id="cart_list_{{ $cartData->cart_id }}" 
+                                                data-web-id="{{ $cartData->cart_web_id }}" 
+                                                data-type="{{ $cartData->marketplace_type }}" 
+                                                data-url="{{ $cartData->host_url }}">
 
-                                            <form>
-                                                <div class="form-group">
-                                                    @if(($cartData->marketplace_type == 1 || $cartData->deleted_at != null || $cartData->userDelete != null || $cartData->vacation_mode == 1 || $cartData->is_active || $cartData->website_status != 4 || $cartData->price_changed == 1) || ($cartData->total == null && $cartData->link_insertion_price == null))
-                                                        <div class="cart_list_lable cart-listing-label  
-                                                        @if($cartData->deleted_at != null || $cartData->userDelete != null || $cartData->vacation_mode == 1 || $cartData->is_active == 1 || $cartData->website_status == 3) unavailable 
-                                                        @elseif($cartData->website_status == 2 || $cartData->website_status == 1) underreview 
-                                                        @endif">
-                                                            <p>
-                                                                @if(($cartData->deleted_at != null || $cartData->userDelete != null || $cartData->is_active == 1 || $cartData->website_status == 3) || ($cartData->total == null && $cartData->link_insertion_price == null))
-                                                                    @if($cartData->marketplace_type == 1)FC @endif Unavailable
-                                                                @elseif($cartData->website_status == 2 || $cartData->website_status == 1 || $cartData->vacation_mode == 1 ) 
-                                                                    @if($cartData->marketplace_type == 1) FC @endif Under Review
-                                                                @elseif($cartData->price_changed == 1) 
-                                                                    @if($cartData->marketplace_type == 1) FC @endif Price Updated
-                                                                @else
-                                                                    @if($cartData->marketplace_type == 1) FC @endif
-                                                                @endif
-                                                            </p>
-                                                        </div>
-                                                    @endif
-
-                                                    <div class="Checkbox">
-                                                        @if($cartData->deleted_at != null || $cartData->userDelete != null || $cartData->vacation_mode == 1 || $cartData->is_active == 1 || $cartData->website_status == 3)
-                                                            <input type="checkbox" disabled name="cart_website">
-                                                        @else
-                                                            <input type="checkbox" name="cart_website[]" 
-                                                                data-web-id="{{ $cartData->website_id }}" 
-                                                                id="cart_website_checkbox_{{ $cartData->website_id }}" 
-                                                                data-web-marketplacetype="{{ $cartData->website_id }}-{{ $cartData->marketplace_type }}" 
-                                                                class="cart_website_checkbox">
+                                                <form>
+                                                    <div class="form-group">
+                                                        @if(($cartData->marketplace_type == 1 || $cartData->deleted_at != null || $cartData->userDelete != null || $cartData->vacation_mode == 1 || $cartData->is_active || $cartData->website_status != 4 || $cartData->price_changed == 1) || ($cartData->total == null && $cartData->link_insertion_price == null))
+                                                            <div class="cart_list_lable cart-listing-label  
+                                                            @if($cartData->deleted_at != null || $cartData->userDelete != null || $cartData->vacation_mode == 1 || $cartData->is_active == 1 || $cartData->website_status == 3) unavailable 
+                                                            @elseif($cartData->website_status == 2 || $cartData->website_status == 1) underreview 
+                                                            @endif">
+                                                                <p>
+                                                                    @if(($cartData->deleted_at != null || $cartData->userDelete != null || $cartData->is_active == 1 || $cartData->website_status == 3) || ($cartData->total == null && $cartData->link_insertion_price == null))
+                                                                        @if($cartData->marketplace_type == 1)FC @endif Unavailable
+                                                                    @elseif($cartData->website_status == 2 || $cartData->website_status == 1 || $cartData->vacation_mode == 1 ) 
+                                                                        @if($cartData->marketplace_type == 1) FC @endif Under Review
+                                                                    @elseif($cartData->price_changed == 1) 
+                                                                        @if($cartData->marketplace_type == 1) FC @endif Price Updated
+                                                                    @else
+                                                                        @if($cartData->marketplace_type == 1) FC @endif
+                                                                    @endif
+                                                                </p>
+                                                            </div>
                                                         @endif
-                                                        <div class="Checkbox-visible"></div>
-                                                    </div>
 
-                                                    <label for="website" data-list-no="{{ $DataNo }}" 
-                                                        class="cart_list_data cart_list_website_{{ $cartData->website_id }} 
-                                                        cart_list_number_{{ $DataNo }} 
-                                                        @if($cartNo == 0 && $websiteActive == '') active 
-                                                        @elseif(($websiteActive == $cartData->website_id) && ($active_marketplace_type == $cartData->marketplace_type)) active  
-                                                        @endif" 
+                                                        <div class="Checkbox">
+                                                            @if($cartData->deleted_at != null || $cartData->userDelete != null || $cartData->vacation_mode == 1 || $cartData->is_active == 1 || $cartData->website_status == 3)
+                                                                <input type="checkbox" disabled name="cart_website">
+                                                            @else
+                                                                <input type="checkbox" name="cart_website[]" 
+                                                                    data-web-id="{{ $cartData->website_id }}" 
+                                                                    id="cart_website_checkbox_{{ $cartData->website_id }}" 
+                                                                    data-web-marketplacetype="{{ $cartData->website_id }}-{{ $cartData->marketplace_type }}" 
+                                                                    class="cart_website_checkbox">
+                                                            @endif
+                                                            <div class="Checkbox-visible"></div>
+                                                        </div>
+
+                                                        <label for="website" data-list-no="{{ $DataNo }}" 
+                                                            class="cart_list_data cart_list_website_{{ $cartData->website_id }} 
+                                                            cart_list_number_{{ $DataNo }} 
+                                                            @if($cartNo == 0 && $websiteActive == '') active 
+                                                            @elseif(($websiteActive == $cartData->website_id) && ($active_marketplace_type == $cartData->marketplace_type)) active  
+                                                            @endif" 
+                                                            data-id="{{ $cartData->cart_id }}" 
+                                                            id="cart_{{ $cartData->cart_id }}" 
+                                                            data-web-id="{{ $cartData->website_id }}" 
+                                                            data-type="{{ $cartData->marketplace_type }}" 
+                                                            data-url="{{ $cartData->host_url }}">
+                                                            {{ $cartData->host_url }}
+                                                        </label>
+
+                                                        <?php
+                                                            $totalContentAdded = isset($cartData->content_group) ? count(explode(',', $cartData->content_group)) : 0;
+                                                        ?>
+                                                        <div id="cart_pending_status_{{ $cartData->website_id }}" 
+                                                            class="cart-listing-dott @if(!is_null($cartData->content_writter)) cart-dott-fill @endif">
+                                                        </div>
+                                                    </div>
+                                                </form>
+
+                                                <input type="hidden" id="backlinkCount" value="@if(isset($cartData->dofollow_link) && $cartData->dofollow_link != null) {{ $cartData->dofollow_link }} @else {{ $cartData->nofollow_link }} @endif">
+
+                                                <?php $cartNo++; ?>
+                                                <div class="cart-tooltip" info-title="delete">
+                                                    <img src="{{ asset('assets/images/cart-action-remove.svg') }}" 
+                                                        class="cart_remove_multiple  
+                                                        @if($cartData->deleted_at != null || $cartData->userDelete != null || $cartData->vacation_mode == 1 || $cartData->is_active == 1 || $cartData->website_status == 3) wishlistHide @endif" 
                                                         data-id="{{ $cartData->cart_id }}" 
-                                                        id="cart_{{ $cartData->cart_id }}" 
+                                                        id="cart_remove_multiple{{ $cartData->cart_id }}" 
                                                         data-web-id="{{ $cartData->website_id }}" 
+                                                        data-list-no="{{ $DataNo }}" 
+                                                        web-marketplacetype="{{ $cartData->website_id }}-{{ $cartData->marketplace_type }}" 
                                                         data-type="{{ $cartData->marketplace_type }}" 
-                                                        data-url="{{ $cartData->host_url }}">
-                                                        {{ $cartData->host_url }}
-                                                    </label>
-
-                                                    <?php
-                                                        $totalContentAdded = isset($cartData->content_group) ? count(explode(',', $cartData->content_group)) : 0;
-                                                    ?>
-                                                    <div id="cart_pending_status_{{ $cartData->website_id }}" class="cart-listing-dott 
-                                                         cart-dott-fill ">
-                                                    </div>
+                                                        data-url="{{ $cartData->host_url }}" 
+                                                        alt="cart-action-remove">
                                                 </div>
-                                            </form>
+                                            </li>
 
-                                            <input type="hidden" id="backlinkCount" value="@if(isset($cartData->dofollow_link) && $cartData->dofollow_link != null) {{ $cartData->dofollow_link }} @else {{ $cartData->nofollow_link }} @endif">
-
-                                            <?php $cartNo++; ?>
-                                            <div class="cart-tooltip" info-title="delete">
-                                                <img src="{{ asset('assets/images/cart-action-remove.svg') }}" 
-                                                    class="cart_remove_multiple  
-                                                    @if($cartData->deleted_at != null || $cartData->userDelete != null || $cartData->vacation_mode == 1 || $cartData->is_active == 1 || $cartData->website_status == 3) wishlistHide @endif" 
-                                                    data-id="{{ $cartData->cart_id }}" 
-                                                    id="cart_remove_multiple{{ $cartData->cart_id }}" 
-                                                    data-web-id="{{ $cartData->website_id }}" 
-                                                    data-list-no="{{ $DataNo }}" 
-                                                    web-marketplacetype="{{ $cartData->website_id }}-{{ $cartData->marketplace_type }}" 
-                                                    data-type="{{ $cartData->marketplace_type }}" 
-                                                    data-url="{{ $cartData->host_url }}" 
-                                                    alt="cart-action-remove">
-                                            </div>
-                                        </li>
-
-                                    @endforeach
-                                </ul>
-
+                                        @endforeach
+                                    </ul>
                                 </div>
                             </div>
                             <div class="cart-listing-fill">
@@ -688,7 +687,7 @@
         let userid = localStorage.getItem('userid') || '0';
 
         $('#walletBalance').text(walletBalance > 0 ? "$" + walletBalance : "$0");
-        $('#cartcount').text(cartTotal > 0 ? cartTotal : '').toggleClass('d-none', cartTotal <= 0);
+        // $('#cartcount').text(cartTotal > 0 ? cartTotal : '').toggleClass('d-none', cartTotal <= 0);
         $('#user_id').val(userid);
 
         setTimeout(function () {
@@ -720,19 +719,21 @@
             var cartItem = selectedCartItem.find(item => item.cart_web_id == selectedWebsiteId);
 
             if (cartItem) {
-                $(".cart-website-info").html(`
-                    <div class="cart-website-title">
-                        <a target="_blank" href="${cartItem.website_url}">${cartItem.host_url}</a>
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#information_modal">
-                            <img src="{{ asset('assets/images/cart-information.svg') }}" alt="cart-information">
-                        </button>
-                        <a class="btn guidelines-btn" data-toggle="modal" data-target="#cart-guidelines-modal">
-                            <img src="{{ asset('assets/images/guidelines-question.svg') }}" alt="guidelines-question"> Guidelines
-                        </a>
-                        <p>Minimum Word Count: <span>${cartItem.article_count ?? 500}</span></p>
-                        <p>Completion ratio: <span>${cartItem.completion_ratio}%</span></p>
-                    </div>
-                `);
+                window.setTimeout(function(){
+                    $(".cart-website-info").html(`
+                        <div class="cart-website-title">
+                            <a target="_blank" href="${cartItem.website_url}">${cartItem.host_url}</a>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#information_modal">
+                                <img src="{{ asset('assets/images/cart-information.svg') }}" alt="cart-information">
+                            </button>
+                            <a class="btn guidelines-btn" data-toggle="modal" data-target="#cart-guidelines-modal">
+                                <img src="{{ asset('assets/images/guidelines-question.svg') }}" alt="guidelines-question"> Guidelines
+                            </a>
+                            <p>Minimum Word Count: <span>${cartItem.article_count ?? 500}</span></p>
+                            <p>Completion ratio: <span>${cartItem.completion_ratio}%</span></p>
+                        </div>
+                    `);
+                }, 300);
             }
         });
 
@@ -986,6 +987,23 @@
 
                         var cart_id = data.cart_id;
                         $('#provide_content_' + cart_id).find('input[type=checkbox]').prop('checked', true);
+                        window.setTimeout(function(){
+                            var web_id = data.web_id;
+                            $('#cart_pending_status_' + web_id).addClass('cart-dott-fill');
+                            var cart_data_total = $('.cart-list-data li').length;
+                            if (cart_data_total > 0) {
+                                var count = $('.cart-listing-dott').not('.cart-dott-fill').length;
+                                if (count > 0) {
+                                    window.setTimeout(function(){
+                                        $('#go_to_summary_btn').removeClass('go_to_summery_msg_error').addClass('active');
+                                    }, 100);
+                                } else {
+                                    window.setTimeout(function(){
+                                        $('#go_to_summary_btn').removeClass('active').addClass('go_to_summery_msg_error');
+                                    }, 100);
+                                }
+                            } 
+                        }, 200);
                     },
                     error: function(xhr, status, error) {
                         setTimeout(function() {
