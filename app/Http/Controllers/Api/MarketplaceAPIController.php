@@ -813,6 +813,17 @@ class MarketplaceAPIController extends Controller
                         'target_url_4' => $advertiserCartListing[$i]['target_url_4'] ?? null,
                         'discount_amount' => $discountAmount,
                     ]);
+
+                    DB::table('notifications')->insert([
+                        'reseller_id' => $advertiserCartListing[$i]['reseller_id'],
+                        'end_client_id' => $advertiserCartListing[$i]['advertiser_id'],
+                        'client_seen' => 0,
+                        'reseller_seen' => 0,
+                        'type' => 'order',
+                        'description' => 'order_placed',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
                 } catch (Exception $e) {
                     \Log::info(['error while inserting data in lp_own_db.order_attributes', $e]);
                 }
@@ -1685,14 +1696,18 @@ class MarketplaceAPIController extends Controller
 
     public function clientNotifications(Request $request)
     {
-        $user_id = $request->end_client_id ?? null;
+        $user_id = $request->end_client_id ?: ($request->reseller_id ?: null);
+        
         if (!$user_id) {
             return response()->json(['error' => 'Invalid token.', 'logout' => true], 401);
         }
 
+        $id_column = isset($request->end_client_id) ? 'end_client_id' : 'reseller_id';
+        $seen_column = isset($request->end_client_id) ? 'client_seen' : 'reseller_seen';
+
         $getNotifications = DB::table('notifications')
-            ->where('end_client_id', $user_id)
-            ->where('client_seen', 0)
+            ->where($id_column, $user_id)
+            ->where($seen_column, 0)
             ->get();
 
         if ($getNotifications->isEmpty()) {

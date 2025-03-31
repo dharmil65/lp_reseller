@@ -4,7 +4,8 @@
     <?php
         $resellerId = isset($resellerId) ? $resellerId : null;
         $resellerName = isset($resellerName) ? $resellerName : null;
-        $walletBalance = DB::connection('lp_own_db')->table('wallets as w1')->selectRaw('SUM(w1.total) as total_balance')->where('w1.reseller_id', $resellerId)->whereRaw('w1.id = (SELECT MAX(id) FROM wallets WHERE user_id = w1.user_id)')->value('total_balance');
+        $walletBalance = DB::connection('lp_own_db')->table('wallets  as w1')->selectRaw('SUM(w1.total) as total_balance')->where('w1.reseller_id', $resellerId)->whereRaw('w1.id = (SELECT MAX(id) FROM wallets WHERE user_id = w1.user_id)')->value('total_balance');
+        $notifications = DB::table('notifications')->where('reseller_id', $resellerId)->count();
     ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +18,8 @@
     <link rel="stylesheet" type="text/css" href="{{ url('css/admin_custom.css') }}?v={{ config('css_versions.admin_custom_css_version') }}">
     <link rel="stylesheet" type="text/css" href="{{ url('css/reseller_custom.css') }}?v={{ config('css_versions.reseller_custom_css_version') }}">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
     @stack('styles')
 
     <style>
@@ -123,6 +126,9 @@
     <nav class="navbar">
         <button class="toggle-btn" id="sidebarToggle"><i class="fas fa-bars"></i></button>
         <div class="navbar_btns">
+            <a id="notification_header"><img src="{{ asset('assets/images/notification.png') }}" alt="notification"><span class="notiy_number notification-number" loading="lazy" id="notification_count" value="{{ (isset($notifications) && $notifications > 0) ? $notifications : '' }}">{{ (isset($notifications) && $notifications > 0) ? $notifications : '' }}</span>
+            <div id="notification_dropdown" class="dropdown-menu" style="display: none;"></div>
+            </a>
             <h5> {{ (isset($walletBalance) && $walletBalance > 0) ? "$".$walletBalance : "$100" }} </h5>
             <span class="res_name" id="res_name">Hello, {{ (isset($resellerName) && $resellerName != null) ? $resellerName : '' }}</span>
             <a href="{{ route('logout') }}" class="res_logout" id="res_logout">Log Out</a>
@@ -159,6 +165,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
     <script src="{{asset('assets/js/popper.min.js')}}"></script>
     <script src="{{asset('assets/js/bootstrap.min.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     @stack('scripts')
 
     <script>
@@ -172,6 +179,47 @@
             $("#sidebarToggle").click(function() {
                 $("#sidebar").toggleClass("collapsed");
                 $("#contentWrapper").toggleClass("expanded");
+            });
+
+            $(document).on('click', '#notification_header', function () {
+                var clientId = "{{ $resellerId }}";
+                var notificationCount = $('#notification_count').text().trim();
+                if (!notificationCount || parseInt(notificationCount) === 0) {
+                    toastr.info('No unread notifications!');
+                } else {
+                    var token = localStorage.getItem("api_token");
+                    $.ajax({
+                        type: "GET",
+                        url: "/api/client-notifications",
+                        headers: {
+                            "Authorization": "Bearer " + token,
+                        },
+                        data: { end_client_id: clientId },
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.success && response.notifications.length > 0) {
+                                var dropdownContent = "";
+                                $.each(response.notifications, function (index, notification) {
+                                    dropdownContent += `
+                                        <div class="notification-item">
+                                            <p>${notification.description}</p>
+                                            <small>${notification.created_at}</small>
+                                        </div>
+                                    `;
+                                });
+
+                                $("#notification_dropdown").toggle().html(dropdownContent);
+                            } else {
+                                $("#notification_dropdown").html('<p class="text-muted">No notifications.</p>').toggle();
+                            }
+                        },
+                        error: function (xhr) {
+                            if (xhr.status === 401) {
+                                window.location.href = "{{ route('logout') }}";
+                            }
+                        }
+                    });
+                }
             });
         });
     </script>
