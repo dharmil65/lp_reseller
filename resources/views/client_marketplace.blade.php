@@ -1702,6 +1702,13 @@
                             $('#walletBalance').text('$0');
                         }
 
+                        if (res.hasOwnProperty('notificationCount') && !isNaN(res.notificationCount) && res.notificationCount > 0) {
+                            $('.notiy_number.notification-number').show();
+                            $('#notification_count').text(res.notificationCount);
+                        } else {
+                            $('.notiy_number.notification-number').hide();
+                        }
+
                         return res.data || [];
                     },
                     error: function (xhr) {

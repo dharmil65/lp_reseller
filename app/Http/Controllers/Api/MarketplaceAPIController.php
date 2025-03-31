@@ -106,6 +106,8 @@ class MarketplaceAPIController extends Controller
 
         $totalPages = ceil($totalWebsiteData / $pagePerSize);
 
+        $notificationCount = DB::table('notifications')->where('end_client_id', $user->id)->where('client_seen', 0)->count();
+
         return response()->json([
             'cartStatus' => $cartStatus,
             'cartsTotal' => $cartsTotal,
@@ -116,6 +118,7 @@ class MarketplaceAPIController extends Controller
             'totalPages' => $totalPages,
             'data' => $websiteData,
             'message' => $websiteData->isEmpty() ? 'No data found' : '',
+            'notificationCount' => $notificationCount
         ], $websiteData->isEmpty() ? 404 : 200);
     }
 
