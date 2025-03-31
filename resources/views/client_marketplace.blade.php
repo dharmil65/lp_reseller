@@ -232,7 +232,7 @@
                             <div id="accordion" class="filter-wrapper">
                                 <div class="filter">
                                     <div class="filter-icon">
-                                        <span><img src="https://lp-latest.elsnerdev.com/assets/latest_assets_new/images/marketplace-filter.png">Filters</span>
+                                        <span><img src="https://lp-latest.elsnerdev.com/assets//images/marketplace-filter.png">Filters</span>
                                     </div>
                                     <div class="filter-btn">
                                         <i class="fas fa-times"></i>
@@ -263,13 +263,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- <div class="category-filter">
-                                    <h6>Switch to <span data-title="Forbidden Category">FC</span></h6>
-                                    <label class="switch">
-                                        <input type="checkbox" id="categoryfilter_check" class="" value="0" name="vacationMode">
-                                        <div class="slider round"></div>
-                                    </label>
-                                </div> -->
                                 <div class="card ">
                                     <div class="card-header category-filter">
                                         <h6>Category</h6>
@@ -277,10 +270,7 @@
                                             <input type="checkbox" id="categoryfilter_check" class="" value="0" name="vacationMode">
                                             <div class="slider round"></div>
                                         </label>    
-                                        <h6>FC <span class="order-tooltip" info-title="FC means Forbidden Category which covers topic related to Casino, Cryptocurrency, CBD, Sports Betting, Vape and Rehabilitation."> <img src="https://lp-latest.elsnerdev.com/assets/latest_assets_new/images/content-form-icon.png" alt="content-form-icon"></span></h6>        
-                                        <!-- <a class="card-link">
-                                            Category
-                                        </a> -->                
+                                        <h6>FC <span class="order-tooltip" info-title="FC means Forbidden Category which covers topic related to Casino, Cryptocurrency, CBD, Sports Betting, Vape and Rehabilitation."> <img src="https://lp-latest.elsnerdev.com/assets//images/content-form-icon.png" alt="content-form-icon"></span></h6>        
                                     </div>
                                     <div id="collapseeight" data-parent="#accordion">
                                         <div class="card-body">
@@ -1589,6 +1579,98 @@
                 </div>
                 <div class="col-md-12 col-lg-10 marketplace-sidebar">
                     <div class="marketplace-table">
+                        <div class="search-br">
+                            <input type="search-br" autocomplete="off" name="search" placeholder=""
+                                id="marketplace_search" class="search_btn">
+                            <div class="search-box">
+                                <ul id="autocomplete_popup">
+                                    <li class="search-box-title">
+                                        <h5>Trending searches</h5>
+                                    </li>
+                                    <li><a href="javascript:void(0)"> dreamstories.co.uk </a></li>
+                                    <li><a href="javascript:void(0)">querianson.com</a></li>
+                                    <li><a href="javascript:void(0)">ventsmagazine.com</a></li>
+                                    <li><a href="javascript:void(0)">manhwaxyz.net</a></li>
+                                    <li><a href="javascript:void(0)">dreamswire.com</a></li>
+                                    <li><a href="#">dre*********.co.uk</a></li>
+                                    <li><a href="#">que*****.com</a></li>
+                                    <li><a href="#">ven**********.com</a></li>
+                                    <li><a href="#">man******.net</a></li>
+                                    <li><a href="#">dre*******.com</a></li>
+                                </ul>
+                                <ul id="trending_search" style="display:none">
+                                    <li class="search-box-title">
+                                        <h5>Trending searches</h5>
+                                    </li>
+                                    
+                                        <div id="trending_forbidden_category" style="display:none">
+                                        <li><a href="javascript:void(0)">ventsmagazine.com</a></li>
+                                    <li><a href="javascript:void(0)">spacecoastdaily.com</a></li>
+                                    <li><a href="javascript:void(0)">theinscribermag.com</a></li>
+                                    <li><a href="javascript:void(0)">nerdbot.com</a></li>
+                                    <li><a href="javascript:void(0)">publicistpaper.com</a></li>
+                                        </div>
+
+                                        <div id="trending_category" style="display:none">
+                                        <li><a href="javascript:void(0)">dreamstories.co.uk</a></li>
+                                    <li><a href="javascript:void(0)">querianson.com</a></li>
+                                    <li><a href="javascript:void(0)">ventsmagazine.com</a></li>
+                                    <li><a href="javascript:void(0)">manhwaxyz.net</a></li>
+                                    <li><a href="javascript:void(0)">dreamswire.com</a></li>
+                                        </div>
+                                </ul>
+                            </div>
+                            <button class="btn button" id="bulkSearchBtn" data-toggle="modal" data-target="#popup-search" bottom-title="Bulk Search"><img
+                                    src="{{asset('assets//images/marketplace-search-bar.png')}}" 
+                                    alt="search"></button>
+                            <div class="search-loader">
+                                <div class="spinner spinner-8">
+                                    <div class="ms-circle1 ms-child"></div>
+                                    <div class="ms-circle2 ms-child"></div>
+                                    <div class="ms-circle3 ms-child"></div>
+                                    <div class="ms-circle4 ms-child"></div>
+                                    <div class="ms-circle5 ms-child"></div>
+                                    <div class="ms-circle6 ms-child"></div>
+                                    <div class="ms-circle7 ms-child"></div>
+                                    <div class="ms-circle8 ms-child"></div>
+                                    <div class="ms-circle9 ms-child"></div>
+                                    <div class="ms-circle10 ms-child"></div>
+                                    <div class="ms-circle11 ms-child"></div>
+                                    <div class="ms-circle12 ms-child"></div>
+                                </div>
+                            </div>
+                            <div class="modal fade search-popup" id="popup-search" tabindex="-1"
+                                aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel"><img
+                                                    src="{{asset('assets//images/search-popup.png')}}">
+                                                Bulk Search</h5>
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                                <!-- <span aria-hidden="true">&times;</span> -->
+                                                <img src="{{asset('assets//images/popup-close.png')}}"
+                                                    alt="popup-search">
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h4>Search multiple websites here</h4>
+                                            <input type="text" maxlength="10" name="tags"
+                                                class="form-control col-sm-12" data-role="tagsinput" id="tags">
+                                            <small class="form-text text-muted">Note: Upto 30 domains can be
+                                                searched at a time</small>
+                                            <span class="error" id="bulk-error" style="display:none"> Bulk Search
+                                                limit has been exceeded. </span>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary" id="bulk_search">Bulk
+                                                Search</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <table id="marketplaceTable" class="table" width="100%" border="0">
                             <thead>
                                 <tr class="table-header">
@@ -1623,6 +1705,30 @@
                 let newUrl = window.location.origin + window.location.pathname;
                 window.history.replaceState({}, document.title, newUrl);
             }, 2000);
+
+            $('.search-loader').css('display', 'none');
+
+            const $inputElement = $('#marketplace_search');
+            const placeholderText = "Search from 100,000 websites";
+            let currentIndex = 0;
+            const typingSpeed = 100;
+            const delayAfterTyping = 1000;
+
+            function typeEffect() {
+                if (currentIndex < placeholderText.length) {
+                    $inputElement.attr("placeholder", placeholderText.substring(0, currentIndex + 1));
+                    currentIndex++;
+                    setTimeout(typeEffect, typingSpeed);
+                } else {
+                    setTimeout(() => {
+                        $inputElement.attr("placeholder", "");
+                        currentIndex = 0;
+                        setTimeout(typeEffect, typingSpeed);
+                    }, delayAfterTyping);
+                }
+            }
+
+            typeEffect();
             
             $(document).on("contextmenu", function (e) {
                 e.preventDefault();
@@ -1951,6 +2057,58 @@
                             }
                         }
                     });
+                }
+            });
+
+            var letter = '';
+            var search = '';
+            var searchTextDisplay = '';
+            var offset = 0;
+            var page = 1;
+            var filterType = '';
+            var sortby = '';
+
+            $('#marketplace_search').on('keyup', function(e) {
+                if (e.keyCode == '32') {
+                    e.preventDefault();
+                } else {
+                    $('.search-loader').css('display', '');
+                    $('.search-box').css('display', 'block');
+                    letter = $('#marketplace_search').val();
+                    search = letter;
+                    searchTextDisplay = search;
+                    var searchValLength = search.trim().length;
+                    var marketPlaceTypeForSearch = $('#categoryfilter_check').val();
+
+                    if (searchValLength > 0) {
+                        // auto-complete search api
+                    } else {
+                        $('#trending_search').css('display', 'block');
+                        $('#autocomplete_popup').css('display', 'none');
+                        $('.search-loader').css('display', 'none');
+                    }
+                }
+
+                if (e.which == 13) {
+                    $('.search-box').css('display', 'none');
+                    $('.search-br .button').css('display', 'block');
+                    $('.search-loader').css('display', 'none');
+                    $('#marketplace_search').attr('placeholder', 'Search from 100,000 websites');
+                    var res = $('#marketplace_search').val();
+                    var resValLength = res.trim().length;
+                    page = 1;
+                    $('.prev').attr('data-prev', 0);
+                    $('.next').attr('data-next', 1);
+                    if (res == '' || res == null) {
+                        $('.search-box').css('display', 'block');
+                        e.preventDefault();
+                    } else {
+                        $('#marketplaceTable').DataTable().ajax.reload();
+                    }
+                }else{
+                    if(search == ''){
+                        $('#marketplaceTable').DataTable().ajax.reload();
+                    }
                 }
             });
         });

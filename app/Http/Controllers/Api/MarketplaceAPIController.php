@@ -90,6 +90,18 @@ class MarketplaceAPIController extends Controller
                 });
         }
 
+        if ($search != null) {
+            $query->where(function ($q) use ($search) {
+                $q->where('website_url', 'LIKE', "%{$search}%")
+                  ->where('host_url', 'LIKE', "%{$search}%")
+                  ->orWhere('da', 'LIKE', "%{$search}%")
+                  ->orWhere('ahref', 'LIKE', "%{$search}%")
+                  ->orWhere('semrush', 'LIKE', "%{$search}%")
+                  ->orWhere('tat', 'LIKE', "%{$search}%")
+                  ->orWhere('backlink_type', 'LIKE', "%{$search}%");
+            });
+        }
+
         $totalWebsiteData = $query->distinct()->count();
 
         if ($offset >= $totalWebsiteData) {

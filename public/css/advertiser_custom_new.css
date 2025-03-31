@@ -1051,7 +1051,7 @@ button:focus {
 	position: absolute;
 	top: 9px;
 	left: 10px;
-	background-image: url(../images/search.png);
+	background-image: url(../assets/images/search.png);
     background-repeat: no-repeat;
     width: 18px;
     height: 18px;
@@ -1110,7 +1110,7 @@ button:focus {
 	position: absolute;
 	top: 6px;
 	left: 0;
-	background-image: url("../images/search.png");
+	background-image: url("../assets/images/search.png");
 	background-repeat: no-repeat;
 	background-size: contain;
 	width: 18px;
@@ -11592,7 +11592,7 @@ a.deleted-msg-tooltip.chat-tooltip {
     position: absolute;
     top: 9px;
     left: 15px;
-    background-image: url(../images/search.png);
+    background-image: url(../assets/images/search.png);
     background-repeat: no-repeat;
     width: 20px;
     height: 20px;
@@ -14177,4 +14177,10 @@ body.swal2-shown {
 .notification-item small {
     color: gray;
     font-size: 12px;
+}
+
+.search-br {
+    max-width: 350px;
+    margin: 0 auto;
+    margin-right: 0;
 }
