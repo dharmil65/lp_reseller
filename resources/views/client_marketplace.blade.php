@@ -222,6 +222,7 @@
         }
     </style>
 
+    <input type="hidden" name="client_id" id="client_id" value="">
     <div class="site-wrapper">
         <section class="marketplace-wrapper">
             <div class="row">
@@ -1709,6 +1710,12 @@
                             $('.notiy_number.notification-number').hide();
                         }
 
+                        if (res.hasOwnProperty('userId') && !isNaN(res.userId) && res.userId > 0) {
+                            $('#client_id').val(res.userId);
+                        } else {
+                            $('#client_id').hide();
+                        }
+
                         return res.data || [];
                     },
                     error: function (xhr) {
@@ -1895,6 +1902,47 @@
                                 const cartTotal = encodeURIComponent(response.cartTotal);
                                 const userid = encodeURIComponent(response.userid);
                                 window.location.href = `{{ route('cart') }}?userid=${userid}&walletBalance=${walletBalance}&cartTotal=${cartTotal}`;
+                            }
+                        },
+                        error: function (xhr) {
+                            if (xhr.status === 401) {
+                                window.location.href = "{{ route('logout') }}";
+                            }
+                        }
+                    });
+                }
+            });
+
+            $(document).on('click', '#notification_header', function () {
+                var clientId = $('#client_id').val();
+                var notificationCount = $('#notification_count').text().trim();
+                if (!notificationCount || parseInt(notificationCount) === 0) {
+                    toastr.info('No unread notifications!');
+                } else {
+                    var token = localStorage.getItem("api_token");
+                    $.ajax({
+                        type: "GET",
+                        url: "/api/client-notifications",
+                        headers: {
+                            "Authorization": "Bearer " + token,
+                        },
+                        data: { end_client_id: clientId },
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.success && response.notifications.length > 0) {
+                                var dropdownContent = "";
+                                $.each(response.notifications, function (index, notification) {
+                                    dropdownContent += `
+                                        <div class="notification-item">
+                                            <p>${notification.description}</p>
+                                            <small>${notification.created_at}</small>
+                                        </div>
+                                    `;
+                                });
+
+                                $("#notification_dropdown").toggle().html(dropdownContent);
+                            } else {
+                                $("#notification_dropdown").html('<p class="text-muted">No notifications.</p>').toggle();
                             }
                         },
                         error: function (xhr) {

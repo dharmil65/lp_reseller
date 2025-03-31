@@ -118,7 +118,8 @@ class MarketplaceAPIController extends Controller
             'totalPages' => $totalPages,
             'data' => $websiteData,
             'message' => $websiteData->isEmpty() ? 'No data found' : '',
-            'notificationCount' => $notificationCount
+            'notificationCount' => $notificationCount,
+            'userId' => $userId
         ], $websiteData->isEmpty() ? 404 : 200);
     }
 
@@ -1680,5 +1681,39 @@ class MarketplaceAPIController extends Controller
         ))->render();
 
         return response()->json(array('success' => true, 'cartListHtml' => $cartListHtml, 'cartDetails'=>$cartDetails , 'languageList' => $languageList, 'cart data fetch'));
+    }
+
+    public function clientNotifications(Request $request)
+    {
+        $user_id = $request->end_client_id ?? null;
+        if (!$user_id) {
+            return response()->json(['error' => 'Invalid token.', 'logout' => true], 401);
+        }
+
+        $getNotifications = DB::table('notifications')
+            ->where('end_client_id', $user_id)
+            ->where('client_seen', 0)
+            ->get();
+
+        if ($getNotifications->isEmpty()) {
+            return response()->json(['success' => true, 'notifications' => []]);
+        }
+
+        $notifications = $getNotifications->map(function ($notification) {
+            $statusLabels = [
+                'order_delivered' => 'Order Delivered',
+                'order_placed' => 'Order Placed',
+                'order_accepted' => 'Order Accepted',
+                'order_completed' => 'Order Completed',
+                'order_delayed' => 'Order Delayed',
+            ];
+    
+            return [
+                'description' => $statusLabels[$notification->description] ?? $notification->description,
+                'created_at' => date('d-m-Y H:i', strtotime($notification->created_at)),
+            ];
+        });
+
+        return response()->json(['success' => true, 'notifications' => $notifications]);
     }
 }

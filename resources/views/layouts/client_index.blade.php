@@ -58,7 +58,9 @@
             </nav>
             <div class="menu-icon icon-menu">
                 <ul class="menu-icon-detail">
-                    <li><a id="notification_header"><img src="{{ asset('assets/images/notification.png') }}" alt="notification"><span class="notiy_number notification-number" loading="lazy" id="notification_count" style="display:none;"></span></a></li>
+                    <li><a id="notification_header"><img src="{{ asset('assets/images/notification.png') }}" alt="notification"><span class="notiy_number notification-number" loading="lazy" id="notification_count" style="display:none;"></span>
+                    <div id="notification_dropdown" class="dropdown-menu" style="display: none;"></div>
+                    </a></li>
                     <li><a  id="wishlist_btn"><img src="{{asset('assets/images/heart.png')}}" alt="heart"><span class="notification-number d-none" loading="lazy" id="wishlistcount"></span></a></li>
                     <li><a id="cart_btn_header"><img src="{{ asset('assets/images/buy.png') }}" alt="buy"><span class="notification-number" loading="lazy" id="cartcount" style="display:none;"></span></a></li>
                     <li class="profile-wrapper dropdown">
