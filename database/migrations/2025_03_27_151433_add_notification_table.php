@@ -17,6 +17,8 @@ return new class extends Migration
             $table->id();
             $table->integer('reseller_id')->nullable();
             $table->integer('end_client_id')->nullable();
+            $table->string('order_attribute_id')->nullable();
+            $table->string('order_lable')->nullable();
             $table->boolean('reseller_seen')->default(0);
             $table->boolean('client_seen')->default(0);
             $table->string('type')->nullable();

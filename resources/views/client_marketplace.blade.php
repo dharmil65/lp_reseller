@@ -2040,6 +2040,7 @@
                                 $.each(response.notifications, function (index, notification) {
                                     dropdownContent += `
                                         <div class="notification-item">
+                                            <p>${notification.order_lable}</p>
                                             <p>${notification.description}</p>
                                             <small>${notification.created_at}</small>
                                         </div>

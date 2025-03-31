@@ -829,6 +829,8 @@ class MarketplaceAPIController extends Controller
                     DB::table('notifications')->insert([
                         'reseller_id' => $advertiserCartListing[$i]['reseller_id'],
                         'end_client_id' => $advertiserCartListing[$i]['advertiser_id'],
+                        'order_attribute_id' => $orderAttributesId,
+                        'order_lable' => $orderLabel,
                         'client_seen' => 0,
                         'reseller_seen' => 0,
                         'type' => 'order',
@@ -1479,6 +1481,19 @@ class MarketplaceAPIController extends Controller
                 ->where('order_lable', $order_attribute_id)
                 ->update(['status' => 6, 'order_complete_accept_no' => $countCompleteOrder]);
 
+            DB::table('notifications')->insert([
+                'reseller_id' => $orderAttributeDetails->reseller_id ?? null,
+                'end_client_id' => $orderAttributeDetails->end_client_id ?? null,
+                'order_attribute_id' => $orderAttributeDetails->id,
+                'order_lable' => $orderAttributeDetails->order_lable,
+                'reseller_seen' => 0,
+                'client_seen' => 0,
+                'type' => 'order',
+                'description' => "order_completed",
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            
             $getPublisher = DB::connection('lp_own_db')->table('order_attributes')->join('websites', 'websites.id', 'order_attributes.website_id')
                 ->join('users', 'users.id', 'websites.publisher_id')
                 ->where('order_attributes.order_lable', $order_attribute_id)
@@ -1735,7 +1750,11 @@ class MarketplaceAPIController extends Controller
                 'order_delayed' => 'Order Delayed',
             ];
     
+            if ($notification->order_attribute_id) {
+                $getOrderLable = DB::connection('lp_own_db')->table('order_attributes')->where('id', $notification->order_attribute_id)->value('order_lable');
+            }
             return [
+                'order_lable' => isset($getOrderLable) ? $getOrderLable : '',
                 'description' => $statusLabels[$notification->description] ?? $notification->description,
                 'created_at' => date('d-m-Y H:i', strtotime($notification->created_at)),
             ];
